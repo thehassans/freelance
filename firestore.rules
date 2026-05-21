@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Case Studies ---
+    match /caseStudies/{studyId} {
+      function isValidCaseStudy(data) {
+        return data.keys().hasAll(['title', 'situation', 'task', 'action', 'result', 'primaryColor', 'authorId', 'createdAt']) &&
+               data.keys().size() == 8 &&
+               data.title is string && data.title.size() <= 200 &&
+               data.situation is string && data.situation.size() <= 5000 &&
+               data.task is string && data.task.size() <= 5000 &&
+               data.action is string && data.action.size() <= 5000 &&
+               data.result is string && data.result.size() <= 5000 &&
+               data.primaryColor is string && data.primaryColor.matches('^#[0-9a-fA-F]{6}$') &&
+               data.authorId == request.auth.uid &&
+               data.createdAt == request.time;
+      }
+
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(studyId) && isValidCaseStudy(incoming());
+      allow update: if isOwner(existing().authorId) && 
+                      incoming().diff(existing()).affectedKeys().hasOnly(['title', 'situation', 'task', 'action', 'result', 'primaryColor']) &&
+                      incoming().authorId == existing().authorId &&
+                      incoming().createdAt == existing().createdAt;
+      allow delete: if isOwner(existing().authorId);
+    }
+
+    // --- Contracts ---
+    match /contracts/{contractId} {
+      function isValidContract(data) {
+        return data.userId is string &&
+               data.shareId is string && data.shareId.size() <= 64 &&
+               data.clientName is string && data.clientName.size() <= 200 &&
+               data.contractType is string &&
+               data.content is string && data.content.size() <= 50000 &&
+               data.status in ['DRAFT', 'SENT', 'VIEWED', 'SIGNED'] &&
+               data.createdAt is string; // Using ISO string from server.ts typically, but could be timestamp
+      }
+
+      // Public read of single document for portal
+      allow get: if true;
+      // List restricted to owner
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      allow create: if isSignedIn() && isValidContract(incoming()) && incoming().userId == request.auth.uid;
+      
+      allow update: if (isOwner(existing().userId) && incoming().userId == existing().userId) ||
+                      (incoming().diff(existing()).affectedKeys().hasOnly(['status', 'clientSign', 'signedAt', 'clientIp']) &&
+                       existing().status != 'SIGNED' &&
+                       incoming().status in ['VIEWED', 'SIGNED']);
+      
+      allow delete: if isOwner(existing().userId);
+    }
+
+    // --- History ---
+    match /history/{historyId} {
+      allow read, list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if false; // History is immutable ideally
+    }
+
+    // --- Capacity ---
+    match /capacity/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // --- User Profiles ---
+    match /profiles/{uid} {
+      function isValidProfile(data) {
+        return data.email is string &&
+               data.planTier in ['FREE', 'PRO'] &&
+               data.keys().hasAll(['email', 'planTier']) &&
+               data.keys().size() >= 2;
+      }
+      
+      allow read: if isSignedIn() && (request.auth.uid == uid);
+      allow create: if isSignedIn() && (request.auth.uid == uid) && isValidProfile(incoming());
+      allow update: if isSignedIn() && (request.auth.uid == uid) && 
+                      incoming().diff(existing()).affectedKeys().hasOnly(['planTier', 'stripeCustomerId', 'updatedAt']) &&
+                      incoming().email == existing().email;
+    }
+
+    // --- Pro CRM & Items ---
+    match /users/{uid} {
+      match /clients/{clientId} {
+        allow read, write: if isOwner(uid);
+      }
+      match /items/{itemId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+  }
+}

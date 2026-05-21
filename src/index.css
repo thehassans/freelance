@@ -1,0 +1,301 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@1,700;1,900&family=Noto+Sans+Arabic:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;700&family=Satisfy&display=swap');
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-signature: "Satisfy", cursive;
+  --font-arabic: "Noto Sans Arabic", sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-primary: #0f4c75;
+  --color-accent: #1b998b;
+  --color-ai: #6c63ff;
+  --color-success: #10b981;
+  --color-warning: #ffd166;
+  --color-danger: #ff6b6b;
+  --color-surface: #ffffff;
+  --color-page: #f4f4f8;
+
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+
+  /* Redefining slate colors as Hex to prevent html2canvas oklch parsing errors */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
+
+  /* More hex overrides for html2canvas compatibility */
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-orange-400: #fbbf24;
+  --color-orange-500: #f59e0b;
+
+  /* Additional hex overrides for common colors */
+  --color-green-50: #f0fdf4;
+  --color-green-100: #dcfce7;
+  --color-green-500: #22c55e;
+  --color-green-600: #16a34a;
+  --color-green-700: #15803d;
+  
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-amber-700: #b45309;
+
+  --color-blue-50: #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+
+  --color-purple-50: #faf5ff;
+  --color-purple-100: #f3e8ff;
+  --color-purple-500: #a855f7;
+  --color-purple-600: #9333ea;
+  --color-purple-700: #7e22ce;
+
+  --color-rose-50: #fff1f2;
+  --color-rose-100: #ffe4e6;
+  --color-rose-500: #f43f5e;
+  --color-rose-600: #e11d48;
+  --color-rose-700: #be123c;
+
+  --color-zinc-50: #f9fafb;
+  --color-zinc-100: #f3f4f6;
+  --color-zinc-200: #e5e7eb;
+  --color-zinc-300: #d1d5db;
+  --color-zinc-400: #9ca3af;
+  --color-zinc-500: #6b7280;
+  --color-zinc-600: #4b5563;
+  --color-zinc-700: #374151;
+  --color-zinc-800: #1f2937;
+  --color-zinc-900: #111827;
+
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+
+  @keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  --animate-bounce-slow: bounce-slow 4s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float-delayed {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(10px); }
+  }
+  --animate-float-delayed: float-delayed 8s ease-in-out infinite;
+
+  @keyframes slide-up-fade {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  --animate-slide-up-fade: slide-up-fade 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+  @keyframes infinite-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-50% - 1rem)); }
+  }
+  --animate-infinite-scroll: infinite-scroll 40s linear infinite;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    background: white !important;
+    padding: 0 !important;
+  }
+
+  nav, footer, .print\:hidden {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  .xl\:grid-cols-2 {
+    display: block !important;
+  }
+
+  .sticky {
+    position: static !important;
+  }
+
+  /* Target the editor specifically to hide it */
+  .grid-cols-1 > div:first-child {
+    display: none !important;
+  }
+
+  /* Target the preview specifically to show it */
+  .grid-cols-1 > div:last-child {
+    display: block !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .shadow-2xl {
+    box-shadow: none !important;
+  }
+
+  .rounded-3xl {
+    border-radius: 0 !important;
+  }
+
+  .min-h-\[1000px\] {
+    min-h: auto !important;
+  }
+}
+
+@layer base {
+  html, body {
+    @apply overflow-x-hidden;
+  }
+  
+  body {
+    @apply bg-page text-slate-900 font-sans;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold tracking-tight;
+  }
+}
+
+.tool-card-shadow {
+  box-shadow: 0 2px 8px rgba(15, 76, 117, 0.08);
+}
+
+.tool-card-shadow:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.neo-outset {
+  box-shadow: 
+    4px 4px 8px rgba(0, 0, 0, 0.05),
+    -4px -4px 8px rgba(255, 255, 255, 0.8);
+}
+
+.neo-inset {
+  box-shadow: 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.05),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.8);
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+[dir="rtl"] {
+  font-family: "Noto Sans Arabic", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+[lang="ur"][dir="rtl"] {
+  font-family: "Noto Nastaliq Urdu", "Noto Sans Arabic", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Logical spacing adjustments for RTL if Tailwind fails or for standard elements */
+[dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: 0; margin-left: auto; }
+
+/* Spacer for mobile sticky bar */
+body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 768px) {
+  main {
+    padding-bottom: 240px; /* Space for the ToolActions sticky bar on mobile */
+  }
+}
+
+/* PDF Export Fixes for html2canvas */
+.pdf-export-mode {
+  transform: none !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+.pdf-export-mode * {
+  animation: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Hide blur elements in PDF as they cause issues and parse errors */
+.pdf-export-mode .blur-\[100px\],
+.pdf-export-mode .blur-\[120px\],
+.pdf-export-mode .blur-3xl {
+  display: none !important;
+}
+
+/* Force hex colors for common backgrounds in PDF mode */
+.pdf-export-mode .bg-primary\/10 { background-color: rgba(15, 76, 117, 0.1) !important; }
+.pdf-export-mode .bg-primary\/20 { background-color: rgba(15, 76, 117, 0.2) !important; }
+.pdf-export-mode .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05) !important; }
+.pdf-export-mode .bg-white\/10 { background-color: rgba(255, 255, 255, 0.1) !important; }
