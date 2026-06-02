@@ -4,272 +4,467 @@ import {
   Hash, 
   DollarSign, 
   Eye, 
-  HelpCircle, 
-  ChevronDown, 
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  Zap,
-  Info,
+  TrendingUp, 
+  MousePointer2, 
+  Target, 
+  ShoppingCart, 
+  BarChart3, 
+  Percent,
   Calculator,
-  TrendingUp,
-  MousePointer2
+  ArrowRight,
+  Info,
+  ChevronRight
 } from 'lucide-react';
 
-export default function CpmCalculator() {
-  const [spend, setSpend] = useState<string>('');
-  const [impressions, setImpressions] = useState<string>('');
-  const [cpm, setCpm] = useState<string>('');
-  const [lastChanged, setLastChanged] = useState<'spend' | 'impressions' | 'cpm' | null>(null);
-  const [solved, setSolved] = useState<'spend' | 'impressions' | 'cpm' | null>(null);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+export default function CPMCalculator() {
+  // Primary Variables (Omni-Directional)
+  const [cost, setCost] = useState<string>('5000');
+  const [impressions, setImpressions] = useState<string>('1000000');
+  const [cpm, setCpm] = useState<string>('5');
+  
+  // Performance Estimates
+  const [ctr, setCtr] = useState<string>('1.5');
+  const [conversionRate, setConversionRate] = useState<string>('2.5');
+  const [aov, setAov] = useState<string>('75');
 
+  // Logic Helpers
+  const [lastPrimaryChanged, setLastPrimaryChanged] = useState<'cost' | 'impressions' | 'cpm'>('cost');
+  const [solvedVariable, setSolvedVariable] = useState<'cost' | 'impressions' | 'cpm' | null>(null);
+
+  // Math Engine
   useEffect(() => {
-    const s = parseFloat(spend);
-    const i = parseFloat(impressions);
-    const c = parseFloat(cpm);
+    const c = parseFloat(cost) || 0;
+    const i = parseFloat(impressions) || 0;
+    const m = parseFloat(cpm) || 0;
 
-    // Logic: Solve for the third if two are present
-    if (!isNaN(s) && !isNaN(i) && lastChanged !== 'cpm') {
-      const result = (s / i) * 1000;
-      setCpm(result.toFixed(2));
-      setSolved('cpm');
-    } else if (!isNaN(c) && !isNaN(i) && lastChanged !== 'spend') {
-      const result = (c * i) / 1000;
-      setSpend(result.toFixed(2));
-      setSolved('spend');
-    } else if (!isNaN(s) && !isNaN(c) && lastChanged !== 'impressions') {
-      const result = (s / c) * 1000;
-      setImpressions(result.toFixed(0));
-      setSolved('impressions');
+    // Detect which variable to solve for based on what was NOT last changed
+    if (lastPrimaryChanged === 'cost') {
+      if (i > 0) {
+        const solvedCPM = (c / i) * 1000;
+        setCpm(solvedCPM.toFixed(2));
+        setSolvedVariable('cpm');
+      }
+    } else if (lastPrimaryChanged === 'cpm') {
+      if (i > 0) {
+        const solvedCost = (m * i) / 1000;
+        setCost(solvedCost.toFixed(2));
+        setSolvedVariable('cost');
+      }
+    } else if (lastPrimaryChanged === 'impressions') {
+      if (m > 0) {
+        const solvedCost = (m * i) / 1000;
+        setCost(solvedCost.toFixed(2));
+        setSolvedVariable('cost');
+      } else if (c > 0) {
+        const solvedCPM = (c / i) * 1000;
+        setCpm(solvedCPM.toFixed(2));
+        setSolvedVariable('cpm');
+      }
     }
-  }, [spend, impressions, cpm, lastChanged]);
+  }, [cost, impressions, cpm, lastPrimaryChanged]);
 
-  const handleInputChange = (field: 'spend' | 'impressions' | 'cpm', value: string) => {
-    setLastChanged(field);
-    setSolved(null);
-    if (field === 'spend') setSpend(value);
-    if (field === 'impressions') setImpressions(value);
-    if (field === 'cpm') setCpm(value);
+  // Derived Metrics
+  const numCost = parseFloat(cost) || 0;
+  const numImpressions = parseFloat(impressions) || 0;
+  const numCtr = parseFloat(ctr) || 0;
+  const numConvRate = parseFloat(conversionRate) || 0;
+  const numAov = parseFloat(aov) || 0;
+
+  const totalClicks = numImpressions * (numCtr / 100);
+  const cpc = totalClicks > 0 ? numCost / totalClicks : 0;
+  const totalConversions = totalClicks * (numConvRate / 100);
+  const totalRevenue = totalConversions * numAov;
+  const roas = numCost > 0 ? totalRevenue / numCost : 0;
+
+  const handlePrimaryChange = (field: 'cost' | 'impressions' | 'cpm', val: string) => {
+    setLastPrimaryChanged(field);
+    if (field === 'cost') setCost(val);
+    if (field === 'impressions') setImpressions(val);
+    if (field === 'cpm') setCpm(val);
   };
 
-  const faqs = [
-    {
-      question: "What is CPM and why does it matter?",
-      answer: "CPM (Cost Per Mille) represents the cost of 1,000 impressions. It is the foundational metric of media buying because it allows you to compare the cost efficiency of different platforms (e.g., Facebook vs TV) regardless of total budget or scale."
-    },
-    {
-      question: "Why is my Facebook CPM so high?",
-      answer: "Higher CPMs are usually caused by three factors: 1. Intense competition (e.g., Q4 holiday season), 2. Narrow audience targeting (niche audiences cost more), or 3. Low ad relevance (FB charges more if people hide your ads or if engagement is low)."
-    },
-    {
-      question: "How do I lower my CPM?",
-      answer: "Broaden your targeting, improve your ad creative to increase engagement (Lowering the frequency), and test different placements. Higher engagement signals to the platform that your ad is valuable, which often rewards you with a lower entry price into the auction."
-    }
-  ];
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12 pb-32">
-      {/* Tool Header */}
-      <div className="text-center mb-16 px-4">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-6 border border-slate-200"
-        >
-          <Hash size={12} /> Unit Cost Optimization
-        </motion.div>
-        <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-4 text-balance">
-          Ultimate <span className="text-slate-600">CPM</span> Calculator
-        </h1>
-        <p className="text-slate-500 max-w-2xl mx-auto font-medium text-lg leading-relaxed font-sans">
-          The foundational metric of media buying. Solve for Spend, Impressions, or CPM automatically as you type.
-        </p>
-      </div>
-
-      <div className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <div className="space-y-4">
-             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-4">Total Ad Spend ($)</label>
-             <div className={`relative transition-all duration-500 rounded-[2.5rem] border ${solved === 'spend' ? 'bg-emerald-50 border-emerald-500 shadow-lg shadow-emerald-200/50 scale-105' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <div className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</div>
-                <input 
-                  type="number" 
-                  value={spend} 
-                  onChange={(e) => handleInputChange('spend', e.target.value)}
-                  placeholder="0.00"
-                  className="w-full pl-14 pr-10 py-10 bg-transparent rounded-[2.5rem] font-black text-3xl md:text-4xl text-slate-900 focus:outline-none placeholder:text-slate-200 transition-all font-display"
-                />
-             </div>
-          </div>
-
-          <div className="space-y-4">
-             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-4">Total Impressions</label>
-             <div className={`relative transition-all duration-500 rounded-[2.5rem] border ${solved === 'impressions' ? 'bg-emerald-50 border-emerald-500 shadow-lg shadow-emerald-200/50 scale-105' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <input 
-                  type="number" 
-                  value={impressions} 
-                  onChange={(e) => handleInputChange('impressions', e.target.value)}
-                  placeholder="1,000,000"
-                  className="w-full px-10 py-10 bg-transparent rounded-[2.5rem] font-black text-3xl md:text-4xl text-slate-900 focus:outline-none placeholder:text-slate-200 transition-all font-display"
-                />
-             </div>
-          </div>
-
-          <div className="space-y-4">
-             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-4">CPM (Cost Per Mille)</label>
-             <div className={`relative transition-all duration-500 rounded-[2.5rem] border ${solved === 'cpm' ? 'bg-emerald-50 border-emerald-500 shadow-lg shadow-emerald-200/50 scale-105' : 'bg-white border-slate-200 shadow-sm'}`}>
-                <div className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</div>
-                <input 
-                  type="number" 
-                  value={cpm} 
-                  onChange={(e) => handleInputChange('cpm', e.target.value)}
-                  placeholder="10.00"
-                  className="w-full pl-14 pr-10 py-10 bg-transparent rounded-[2.5rem] font-black text-3xl md:text-4xl text-slate-900 focus:outline-none placeholder:text-slate-200 transition-all font-display"
-                />
-             </div>
-          </div>
-        </div>
-
-        {/* Dashboard/Helper */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-32 items-center">
-           <div className="bg-slate-900 rounded-[3rem] p-12 text-white relative overflow-hidden shadow-2xl">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl -mr-32 -mt-32 rounded-full" />
-              <div className="relative z-10 space-y-6">
-                 <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-2xl w-fit">
-                    <Zap size={24} />
-                 </div>
-                 <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">Bi-Directional Logic</p>
-                 <h2 className="text-3xl font-black tracking-tight leading-tight">Enter any two values to solve for the target metric.</h2>
-                 <p className="text-slate-400 font-medium">Unlike basic calculators, ours allows you to work backwards from your target CPM to find your required budget or reach.</p>
+    <div className="min-h-screen bg-[#F8FAFC]">
+      {/* Header Area */}
+      <div className="bg-white border-b border-slate-200 py-12 mb-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-widest rounded-full mb-4 border border-blue-100">
+                <BarChart3 size={12} /> Media Buying Intelligence
               </div>
-           </div>
-
-           <div className="space-y-6">
-              <div className="p-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm flex items-start gap-6 group hover:border-emerald-200 transition-colors">
-                 <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-                    <TrendingUp size={20} />
-                 </div>
-                 <div>
-                    <h4 className="text-lg font-black text-slate-900">Market Benchmarking</h4>
-                    <p className="text-sm font-medium text-slate-500 leading-relaxed">Compare your current CPM against industry averages to see if you are overpaying for your attention.</p>
-                 </div>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-3 text-balance">
+                CPM <span className="text-slate-400 font-light">Forecast</span> Engine
+              </h1>
+              <p className="text-slate-500 font-medium text-lg max-w-xl">
+                Advanced performance forecasting for modern advertisers. Auto-solve for reach and calculate your path to ROAS profitably.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-slate-400 font-mono text-xs pb-2">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Live Solver Active
               </div>
-
-              <div className="p-8 bg-white border border-slate-200 rounded-[2.5rem] shadow-sm flex items-start gap-6 group hover:border-emerald-200 transition-colors">
-                 <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-                    <MousePointer2 size={20} />
-                 </div>
-                 <div>
-                    <h4 className="text-lg font-black text-slate-900">Scalability Testing</h4>
-                    <p className="text-sm font-medium text-slate-500 leading-relaxed">Calculate the required budget to achieve the impressions needed for your next major campaign launch.</p>
-                 </div>
-              </div>
-           </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* SEO Content Section */}
-      <section className="mt-32 space-y-24">
-        {/* Value Prop */}
-        <div className="max-w-4xl mx-auto px-4">
-           <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">The foundational metric of media buying.</h2>
-           </div>
-           <div className="bg-white border border-slate-200 p-8 md:p-16 rounded-[3.5rem] shadow-sm relative group overflow-hidden font-sans">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                 <Eye size={40} className="text-slate-600" />
-              </div>
-              <div className="prose prose-slate max-w-none prose-lg font-medium text-slate-600 leading-relaxed">
-                 <p>
-                    The CPM formula is simple: (Total Spend / Impressions) * 1,000. However, the strategy behind it is complex. Your CPM dictates your Cost Per Conversion; if your CPM doubles, your CPA doubles, assuming your funnel efficiency remains the same.
-                 </p>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-10">
-                    <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100">
-                       <h4 className="text-slate-900 font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-                         <Calculator size={14} className="text-slate-600" /> Bi-Directional Logic
-                       </h4>
-                       <p className="text-sm text-slate-500 leading-normal">
-                         Work forward or backwards. Solve for spend, impressions, or CPM as your campaign variables shift.
-                       </p>
-                    </div>
-                    <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100">
-                       <h4 className="text-slate-900 font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-                         <Info size={14} className="text-blue-600" /> Platform Insights
-                       </h4>
-                       <p className="text-sm text-slate-500 leading-normal">
-                         Understand why your CPM fluctuates based on audience saturation, ad fatigue, and keyword competition.
-                       </p>
-                    </div>
-                 </div>
-                 <p>
-                    Professional media buyers use CPM to monitor the 'ad auction heat'. If a CPM spikes without a corresponding increase in conversion, it's a signal to refresh your creatives or pivot your targeting strategy immediately.
-                 </p>
-              </div>
-           </div>
-        </div>
-
-        {/* FAQ Accordion */}
-        <div className="max-w-4xl mx-auto px-4">
-           <div className="text-center mb-16 px-4">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">CPM Strategy FAQ</h2>
-              <p className="text-slate-500 font-medium">Essential media buying math for modern digital marketers.</p>
-           </div>
-           <div className="space-y-4">
-              {faqs.map((faq, idx) => (
-                <div 
-                  key={idx}
-                  className={`bg-white rounded-3xl border border-slate-200 transition-all overflow-hidden ${openFaq === idx ? 'shadow-xl shadow-slate-200/50 border-slate-300' : ''}`}
-                >
-                  <button 
-                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                    className="w-full flex items-center justify-between p-8 text-left"
-                  >
-                    <span className="text-lg md:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                      <HelpCircle size={20} className="text-slate-400" />
-                      {faq.question}
-                    </span>
-                    <ChevronDown className={`text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {openFaq === idx && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                      >
-                        <div className="px-8 pb-8 pl-16">
-                          <p className="text-slate-500 leading-relaxed font-medium">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+      <main className="max-w-7xl mx-auto px-6 pb-24">
+        {/* Enterprise Split Layout */}
+        <div className="flex flex-col lg:flex-row gap-8 w-full">
+          
+          {/* Left Panel: Inputs */}
+          <div className="w-full lg:w-5/12 space-y-6">
+            {/* Campaign Basics Card */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                  <Target size={20} />
                 </div>
-              ))}
-           </div>
-        </div>
-      </section>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Campaign Basics</h2>
+              </div>
 
-      {/* CTA Footer */}
-      <section className="mt-32 max-w-7xl mx-auto px-4">
-        <div className="bg-slate-900 rounded-[3.5rem] p-12 md:p-24 text-center relative overflow-hidden text-white shadow-2xl">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 blur-3xl -ml-48 -mt-48 rounded-full" />
-          <div className="relative z-10">
-            <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tight text-balance">Master Your <br/>Media Buy.</h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-12 font-medium">
-              Join thousands of advertising professionals who use our data to defend their spend and scale their campaigns.
-            </p>
-            <button 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="px-12 py-6 bg-white text-slate-900 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-2xl shadow-black/20 flex items-center gap-3 mx-auto group"
-            >
-              Analyze Your CPM <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
-            </button>
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-2 px-1">Total Ad Spend ($)</label>
+                  <div className={`relative transition-all duration-300 rounded-2xl border ${solvedVariable === 'cost' ? 'border-blue-500 ring-4 ring-blue-50 bg-blue-100/5' : 'border-slate-200 focus-within:border-slate-400'}`}>
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</div>
+                    <input 
+                      type="number"
+                      id="cost-input"
+                      value={cost}
+                      onChange={(e) => handlePrimaryChange('cost', e.target.value)}
+                      placeholder="0.00"
+                      className="w-full pl-10 pr-6 py-4 bg-transparent font-bold text-xl text-slate-900 outline-none placeholder:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-2 px-1">Total Impressions</label>
+                  <div className={`relative transition-all duration-300 rounded-2xl border ${solvedVariable === 'impressions' ? 'border-blue-500 ring-4 ring-blue-50 bg-blue-100/5' : 'border-slate-200 focus-within:border-slate-400'}`}>
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
+                      <Eye size={16} />
+                    </div>
+                    <input 
+                      type="number"
+                      id="impressions-input"
+                      value={impressions}
+                      onChange={(e) => handlePrimaryChange('impressions', e.target.value)}
+                      placeholder="1,000,000"
+                      className="w-full pl-12 pr-6 py-4 bg-transparent font-bold text-xl text-slate-900 outline-none placeholder:text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-2 px-1">CPM (Cost Per Mille)</label>
+                  <div className={`relative transition-all duration-300 rounded-2xl border ${solvedVariable === 'cpm' ? 'border-blue-500 ring-4 ring-blue-50 bg-blue-100/5' : 'border-slate-200 focus-within:border-slate-400'}`}>
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</div>
+                    <input 
+                      type="number"
+                      id="cpm-input"
+                      value={cpm}
+                      onChange={(e) => handlePrimaryChange('cpm', e.target.value)}
+                      placeholder="5.00"
+                      className="w-full pl-10 pr-6 py-4 bg-transparent font-bold text-xl text-slate-900 outline-none placeholder:text-slate-200"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Performance Estimates Card */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                  <TrendingUp size={20} />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Performance Estimates</h2>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-2 px-1">Click-Through Rate (%)</label>
+                  <div className="relative rounded-2xl border border-slate-200 focus-within:border-slate-400 transition-colors">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</div>
+                    <input 
+                      type="number"
+                      id="ctr-input"
+                      value={ctr}
+                      onChange={(e) => setCtr(e.target.value)}
+                      className="w-full px-6 py-4 bg-transparent font-bold text-xl text-slate-900 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-2 px-1">Conversion Rate (%)</label>
+                  <div className="relative rounded-2xl border border-slate-200 focus-within:border-slate-400 transition-colors">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">%</div>
+                    <input 
+                      type="number"
+                      id="conversion-rate-input"
+                      value={conversionRate}
+                      onChange={(e) => setConversionRate(e.target.value)}
+                      className="w-full px-6 py-4 bg-transparent font-bold text-xl text-slate-900 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-2 px-1">Average Order Value (AOV)</label>
+                  <div className="relative rounded-2xl border border-slate-200 focus-within:border-slate-400 transition-colors">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</div>
+                    <input 
+                      type="number"
+                      id="aov-input"
+                      value={aov}
+                      onChange={(e) => setAov(e.target.value)}
+                      className="w-full pl-10 pr-6 py-4 bg-transparent font-bold text-xl text-slate-900 outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Panel: Results Dashboard */}
+          <div className="w-full lg:w-7/12">
+            <div className="bg-slate-900 rounded-[2.5rem] p-10 h-full text-white shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[100px] -mr-32 -mt-32 rounded-full" />
+              
+              <div className="relative z-10">
+                <div className="flex justify-between items-center mb-10">
+                  <h3 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400">Analysis Output</h3>
+                  <div className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] text-slate-400">v4.0 PRO ENGINE</div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  {/* Revenue Card (Green) */}
+                  <div id="revenue-projection-card" className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2rem]">
+                    <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-3">
+                      <DollarSign size={12} /> Projected Revenue
+                    </div>
+                    <div className="text-4xl font-black tracking-tight mb-2">
+                      ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                    <div className="text-xs text-emerald-400/60 font-medium">Potential campaign value</div>
+                  </div>
+
+                  {/* ROAS Card (Green) */}
+                  <div id="roas-forecast-card" className="bg-emerald-500/10 border border-emerald-500/20 p-8 rounded-[2rem]">
+                    <div className="flex items-center gap-2 text-emerald-400 text-[10px] font-black uppercase tracking-widest mb-3">
+                      <TrendingUp size={12} /> Forecasted ROAS
+                    </div>
+                    <div className="text-4xl font-black tracking-tight mb-2">
+                      {roas.toFixed(2)}x
+                    </div>
+                    <div className="text-xs text-emerald-400/60 font-medium">Return on ad spend</div>
+                  </div>
+
+                  {/* Clicks Card (Blue) */}
+                  <div id="clicks-estimate-card" className="bg-blue-500/10 border border-blue-500/20 p-8 rounded-[2rem]">
+                    <div className="flex items-center gap-2 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-3">
+                      <MousePointer2 size={12} /> Total Clicks
+                    </div>
+                    <div className="text-4xl font-black tracking-tight mb-2">
+                      {totalClicks.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-blue-400/60 font-medium">Estimated traffic flow</div>
+                  </div>
+
+                  {/* CPC Card (Blue) */}
+                  <div id="cpc-estimate-card" className="bg-blue-500/10 border border-blue-500/20 p-8 rounded-[2rem]">
+                    <div className="flex items-center gap-2 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-3">
+                      <DollarSign size={12} /> Est. CPC
+                    </div>
+                    <div className="text-4xl font-black tracking-tight mb-2">
+                      ${cpc.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-blue-400/60 font-medium">Cost per individual click</div>
+                  </div>
+                </div>
+
+                {/* Main Conversion Metric */}
+                <div id="conversion-summary-panel" className="bg-white/5 border border-white/10 p-10 rounded-[2.5rem]">
+                   <div className="flex items-center justify-between gap-8">
+                      <div>
+                        <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest mb-4">
+                          <ShoppingCart size={12} /> conversions
+                        </div>
+                        <div className="text-6xl font-black tracking-tighter">
+                          {totalConversions.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        </div>
+                        <div className="text-sm text-slate-500 font-medium mt-2 leading-relaxed">
+                          Predicted acquisitions based on <span className="text-white">{numConvRate}%</span> conversion rate.
+                        </div>
+                      </div>
+                      <div className="hidden sm:block">
+                         <div className="w-24 h-24 rounded-full border-4 border-white/5 border-t-blue-500 flex items-center justify-center">
+                            <span className="text-lg font-black">{numConvRate}%</span>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="mt-12 flex items-center gap-6 justify-center">
+                   <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Multi-Layer Calc
+                   </div>
+                   <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Revenue Projected
+                   </div>
+                   <div className="flex items-center gap-2 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                      <div className="w-1.5 h-1.5 rounded-full bg-slate-500" /> Solver Priority
+                   </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+
+        {/* SEO Details & Layout Integration (Bottom Area) */}
+        <section id="cpm-seo-guide" className="w-full max-w-5xl mx-auto mt-24 pt-12 border-t border-slate-200 prose prose-slate max-w-none">
+          <div className="space-y-12 text-slate-600">
+            <header className="mb-16">
+               <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 text-[9px] font-black uppercase tracking-widest rounded-md mb-6 border border-slate-200">
+                <Info size={10} /> Authority Guide
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight !my-0">
+                What is CPM?
+              </h2>
+            </header>
+
+            <div className="grid grid-cols-1 gap-8 text-lg leading-relaxed">
+              <p>
+                <strong>CPM</strong>, also known as <strong>Cost Per Mille</strong>, is a digital advertising metric used to measure the cost of showing an advertisement to 1,000 users. Businesses and marketers use CPM to understand how efficiently their ads are reaching potential customers and increasing brand visibility.
+              </p>
+              <p>
+                In simple terms, CPM helps advertisers evaluate how much they are paying for exposure and impressions rather than clicks or direct sales.
+              </p>
+            </div>
+
+            <h3 className="text-2xl font-black text-slate-900 mt-16">Why CPM Matters in Digital Marketing</h3>
+            <p>
+              CPM campaigns are commonly used for brand awareness and audience reach. Since the objective is visibility, CPM advertising is ideal for businesses that want to introduce their products, services, or brand to a larger audience. 
+              With the right strategy, CPM advertising can help companies:
+            </p>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-2 list-none p-0">
+              <li className="flex items-center gap-3 font-bold text-slate-900"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full" /> Build stronger brand recognition</li>
+              <li className="flex items-center gap-3 font-bold text-slate-900"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full" /> Reach targeted audiences at scale</li>
+              <li className="flex items-center gap-3 font-bold text-slate-900"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full" /> Improve remarketing opportunities</li>
+              <li className="flex items-center gap-3 font-bold text-slate-900"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full" /> Increase customer familiarity and trust</li>
+              <li className="flex items-center gap-3 font-bold text-slate-900"><div className="w-1.5 h-1.5 bg-blue-500 rounded-full" /> Support long-term conversion strategies</li>
+            </ul>
+
+            <h3 className="text-3xl font-black text-slate-900 mt-20 pt-12 border-t border-slate-100">Benefits of CPM Advertising</h3>
+            
+            <h4 className="text-xl font-bold text-slate-900 mb-4">Increased Brand Awareness</h4>
+            <p>
+              CPM campaigns are designed to maximize visibility. Your ads appear in front of a large number of users, helping your business stay recognizable and memorable across digital platforms. 
+              Whether you’re launching a new product or entering a new market, CPM advertising can help your brand gain exposure quickly.
+            </p>
+
+            <h4 className="text-xl font-bold text-slate-900 mb-4">Cost-Effective Marketing</h4>
+            <p>
+              One of the biggest advantages of CPM advertising is budget control. Advertisers can set spending limits based on the number of impressions they want to achieve. 
+              This makes CPM an effective option for businesses looking to generate awareness without paying for every click or conversion.
+            </p>
+
+            <h4 className="text-xl font-bold text-slate-900 mb-4">Better Retargeting Opportunities</h4>
+            <p>
+              Even if users do not immediately purchase after seeing your ad, CPM campaigns help introduce your brand to potential customers. 
+              Once visitors interact with your website or social platforms, you can retarget them later with more personalized campaigns through platforms like Facebook, Instagram, or Google Ads. 
+              This repeated exposure increases the likelihood of future conversions.
+            </p>
+
+            <div className="bg-slate-100 rounded-3xl p-10 mt-16">
+              <h3 className="text-2xl font-black text-slate-900 !mt-0">How to Calculate CPM</h3>
+              <p>The CPM formula is simple:</p>
+              <code className="block bg-white p-6 rounded-2xl text-xl font-mono text-blue-600 border border-slate-200 mb-6">
+                CPM = (Total Campaign Cost / Total Impressions) × 1000
+              </code>
+              <p>To calculate CPM, you need:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>Total advertising cost</li>
+                <li>Total number of impressions</li>
+              </ul>
+              <p>Divide the campaign cost by impressions, then multiply the result by 1,000.</p>
+            </div>
+
+            <div className="border-l-4 border-slate-900 pl-8 my-16 py-4 italic text-xl">
+              <h4 className="font-black not-italic text-sm uppercase tracking-widest text-slate-400 mb-4">CPM Example</h4>
+              <p className="text-slate-900 font-medium leading-relaxed">
+                Suppose a business spends $3,000 on an advertising campaign that generates 1,500,000 impressions.
+                The calculation would be:
+              </p>
+              <p className="font-mono text-slate-900 mt-4 bg-slate-100 inline-block px-4 py-2 rounded-lg">
+                CPM = (3000 / 1500000) × 1000 = 2
+              </p>
+              <p className="text-slate-600 text-sm mt-4 not-italic">
+                In this example, the CPM is $2, meaning the advertiser pays $2 for every 1,000 impressions.
+              </p>
+            </div>
+
+            <h3 className="text-2xl font-black text-slate-900">When Should You Use CPM?</h3>
+            <p>CPM marketing works best when your goal is:</p>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0">
+              <li className="flex items-center gap-3"><ChevronRight size={16} className="text-blue-500" /> Brand awareness</li>
+              <li className="flex items-center gap-3"><ChevronRight size={16} className="text-blue-500" /> Product launches</li>
+              <li className="flex items-center gap-3"><ChevronRight size={16} className="text-blue-500" /> Audience expansion</li>
+              <li className="flex items-center gap-3"><ChevronRight size={16} className="text-blue-500" /> Social media visibility</li>
+              <li className="flex items-center gap-3"><ChevronRight size={16} className="text-blue-500" /> Display advertising campaigns</li>
+            </ul>
+            <p>Businesses often use CPM campaigns at the top of the marketing funnel to attract attention before focusing on conversions.</p>
+
+            <h3 className="text-3xl font-black text-slate-900 mt-20">CPM vs CPC vs CPA</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
+              <div className="bg-white border border-slate-200 p-8 rounded-3xl">
+                <h4 className="text-lg font-black text-slate-900 mb-2">CPM (Cost Per Mille)</h4>
+                <p className="text-sm text-slate-500 leading-relaxed mb-4">You pay for every 1,000 ad impressions.</p>
+                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Best for: Brand awareness and visibility.</p>
+              </div>
+
+              <div className="bg-white border border-slate-200 p-8 rounded-3xl">
+                <h4 className="text-lg font-black text-slate-900 mb-2">CPC (Cost Per Click)</h4>
+                <p className="text-sm text-slate-500 leading-relaxed mb-4">You pay only when someone clicks your advertisement.</p>
+                <div className="text-[10px] font-mono bg-slate-50 p-2 rounded mb-4">CPC = Total Campaign Cost / Total Clicks</div>
+                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Best for: Website traffic and lead generation.</p>
+              </div>
+
+              <div className="bg-white border border-slate-200 p-8 rounded-3xl">
+                <h4 className="text-lg font-black text-slate-900 mb-2">CPA (Cost Per Action)</h4>
+                <p className="text-sm text-slate-500 leading-relaxed mb-4">You pay only when a user completes a specific action like purchasing, filling a form, or signing up.</p>
+                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">Best for: Conversion-focused campaigns.</p>
+              </div>
+            </div>
+
+            <div className="mt-24 text-center border-t border-slate-100 pt-16">
+              <h3 className="text-3xl font-black text-slate-900">Final Thoughts</h3>
+              <p className="max-w-3xl mx-auto text-xl">
+                CPM advertising remains one of the most effective ways to increase online visibility and strengthen brand recognition. While it may not directly guarantee sales, it plays an important role in building audience awareness and supporting long-term marketing success. 
+                When combined with retargeting and conversion campaigns, CPM can become a powerful part of a complete digital marketing strategy.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer Utility */}
+      <footer className="bg-white border-t border-slate-200 py-12">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <Calculator className="text-slate-400" size={24} />
+            <h5 className="font-black text-slate-900 uppercase tracking-[0.3em] text-xs">CPM Analysis Tool v4.0</h5>
+          </div>
+          <p className="text-slate-400 text-sm max-w-md mx-auto">
+            Professional media buying suite for campaign forecasting and performance auditing.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

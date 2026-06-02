@@ -610,7 +610,10 @@ The nondisclosure provisions of this Agreement shall survive the termination of 
           primaryColor={primaryColor}
           toolId="contract-builder"
         >
-          <div className={`flex flex-col font-serif text-slate-900 h-full transition-opacity duration-500 ${isLocked ? 'opacity-90' : 'opacity-100'}`}>
+          <div 
+            className={`flex flex-col font-serif text-slate-900 h-full transition-opacity duration-500 ${isLocked ? 'opacity-90' : 'opacity-100'}`}
+            style={{ marginLeft: '40px', marginTop: '-57px' }}
+          >
             <div className="flex justify-between items-start mb-12 border-b-2 pb-8" style={{ borderBottomColor: primaryColor }}>
               <div>
                 {logo ? (

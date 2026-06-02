@@ -1,11 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Zap, History, FileText, ChevronDown, HelpCircle, Inbox, Sparkles, Flame, Check } from 'lucide-react';
+import { Search, Zap, History, FileText, ChevronDown, HelpCircle, Inbox, Sparkles, Flame, Check, Star, LayoutDashboard } from 'lucide-react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { TOOLS, CATEGORIES, getCategorySlug, getCategoryIdFromSlug } from '../lib/tools-registry';
 import ToolGrid from '../components/ToolGrid';
 import SEO from '../components/SEO';
 import { historyService, HistoryItem } from '../lib/history-service';
+import { toast } from 'sonner';
+import ToolCard from '../components/ToolCard';
 
 interface ToolsPageProps {
   onToolClick: (slug: string) => void;
@@ -78,9 +80,98 @@ export default function ToolsPage({ onToolClick, recentToolSlugs }: ToolsPagePro
   const [sortFilter, setSortFilter] = useState<'A-Z' | 'Most Popular' | 'Recently Added'>('Most Popular');
   const [audienceFilter, setAudienceFilter] = useState('All');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [filterTab, setFilterTab] = useState<'All' | 'Free' | 'Freemium' | 'Trending'>('All');
+  const [filterTab, setFilterTab] = useState<'All' | 'Free' | 'Freemium' | 'Trending' | 'Favorites'>('All');
   const activeCategorySlug = searchParams.get('category') || 'All';
   const activeCategory = getCategoryIdFromSlug(activeCategorySlug);
+
+  // 1. Favorites & Recents Engine
+  const [favoritedTools, setFavoritedTools] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('fk_favorited_tools');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [recentlyUsedTools, setRecentlyUsedTools] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('fk_recently_used_tools');
+      if (saved) return JSON.parse(saved);
+      if (recentToolSlugs && recentToolSlugs.length > 0) {
+        return recentToolSlugs
+          .map(slug => TOOLS.find(t => t.slug === slug)?.id)
+          .filter((id): id is string => !!id)
+          .slice(0, 4);
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('fk_favorited_tools', JSON.stringify(favoritedTools));
+  }, [favoritedTools]);
+
+  useEffect(() => {
+    localStorage.setItem('fk_recently_used_tools', JSON.stringify(recentlyUsedTools));
+  }, [recentlyUsedTools]);
+
+  const handleToggleFavorite = (toolId: string, e?: React.MouseEvent) => {
+    const isFav = favoritedTools.includes(toolId);
+    if (isFav) {
+      setFavoritedTools(prev => prev.filter(id => id !== toolId));
+      toast.error('Tool unpinned');
+    } else {
+      setFavoritedTools(prev => [...prev, toolId]);
+      toast.success('Tool pinned!');
+    }
+  };
+
+  const handleToolLaunch = (slug: string) => {
+    const tool = TOOLS.find(t => t.slug === slug);
+    if (tool) {
+      setRecentlyUsedTools(prev => {
+        const filtered = prev.filter(id => id !== tool.id);
+        const next = [tool.id, ...filtered].slice(0, 4);
+        return next;
+      });
+    }
+    onToolClick(slug);
+  };
+
+  // 4. Command Palette (Cmd+K Modal) & Fuzzy Search
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [modalSearchQuery, setModalSearchQuery] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchModalOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const modalFilteredTools = useMemo(() => {
+    const query = modalSearchQuery.trim().toLowerCase();
+    if (!query) return TOOLS.slice(0, 8); // suggestions default
+
+    return TOOLS.filter(tool => {
+      const nameMatch = tool.name.toLowerCase().includes(query);
+      const descMatch = tool.description.toLowerCase().includes(query);
+      const catMatch = Array.isArray(tool.category)
+        ? tool.category.some(c => c.toLowerCase().includes(query))
+        : tool.category.toLowerCase().includes(query);
+      const tagsMatch = tool.tags && Array.isArray(tool.tags)
+        ? tool.tags.some(t => t.toLowerCase().includes(query))
+        : false;
+      return nameMatch || descMatch || catMatch || tagsMatch;
+    });
+  }, [modalSearchQuery]);
 
   const setActiveCategory = (id: string) => {
     if (id === 'All') {
@@ -91,7 +182,7 @@ export default function ToolsPage({ onToolClick, recentToolSlugs }: ToolsPagePro
     setSearchParams(searchParams);
   };
 
-    const filteredTools = useMemo(() => {
+  const filteredTools = useMemo(() => {
     let result = TOOLS.filter(tool => {
       const query = searchQuery.toLowerCase();
       const matchesSearch = tool.name.toLowerCase().includes(query) || 
@@ -104,6 +195,7 @@ export default function ToolsPage({ onToolClick, recentToolSlugs }: ToolsPagePro
       let matchesTier = true;
       if (filterTab === 'Free') matchesTier = tool.tier.toUpperCase() === 'FREE';
       if (filterTab === 'Freemium') matchesTier = tool.tier.toUpperCase() === 'FREEMIUM';
+      if (filterTab === 'Favorites') matchesTier = favoritedTools.includes(tool.id);
       
       return matchesSearch && matchesCategory && matchesTier && matchesAudience;
     });
@@ -119,7 +211,7 @@ export default function ToolsPage({ onToolClick, recentToolSlugs }: ToolsPagePro
     }
 
     return result;
-  }, [searchQuery, activeCategory, sortFilter, filterTab, audienceFilter]);
+  }, [searchQuery, activeCategory, sortFilter, filterTab, audienceFilter, favoritedTools]);
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -245,32 +337,26 @@ export default function ToolsPage({ onToolClick, recentToolSlugs }: ToolsPagePro
           <main className="md:col-span-9 space-y-8">
             {/* Premium Search Bar Row */}
             <div className="flex flex-col md:flex-row gap-4 items-center">
-              <div className="relative group flex-grow w-full">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0f4c75] transition-colors" size={24} />
-                <input 
-                  type="text" 
-                  placeholder="Search 70+ professional utilities (e.g. 'invoice', 'rate', 'seo')..."
-                  className="w-full pl-16 pr-8 py-6 bg-white border border-slate-200 rounded-[2rem] shadow-sm group-focus-within:shadow-2xl group-focus-within:shadow-[#0f4c75]/10 group-focus-within:border-[#0f4c75] outline-none transition-all text-xl font-bold"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-6 top-1/2 -translate-y-1/2 p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"
-                  >
-                    <History size={16} />
-                  </button>
-                )}
-              </div>
-
+              <button 
+                onClick={() => setIsSearchModalOpen(true)}
+                className="relative group h-12 px-4 py-2 w-full max-w-sm flex items-center justify-between rounded-full border border-slate-200 bg-white hover:shadow-md hover:border-[#0f4c75] transition-all text-sm font-bold cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <Search className="text-slate-400 group-hover:text-[#0f4c75] transition-colors flex-shrink-0" size={18} />
+                  <span className="text-slate-400 font-bold">Search</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-lg text-slate-400 text-[10px] font-black select-none uppercase tracking-widest flex-shrink-0">
+                  <span>⌘</span>
+                  <span>K</span>
+                </div>
+              </button>
               {/* Tier Filter Segmented Control */}
-              <div className="shrink-0 flex bg-white border border-slate-200 p-1.5 rounded-[2rem]">
-                {['All', 'Free', 'Freemium', 'Trending'].map((t) => (
+              <div className="shrink-0 flex bg-white border border-slate-200 p-1.5 rounded-[2rem] gap-1 flex-wrap">
+                {['All', 'Free', 'Freemium', 'Trending', 'Favorites'].map((t) => (
                   <button
                     key={t}
                     onClick={() => setFilterTab(t as any)}
-                    className={`px-6 py-4.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
+                    className={`px-5 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
                       filterTab === t 
                         ? 'bg-[#0f4c75] text-white shadow-lg' 
                         : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
@@ -335,33 +421,94 @@ export default function ToolsPage({ onToolClick, recentToolSlugs }: ToolsPagePro
               ))}
             </div>
 
-            {/* Grid Display */}
-            {filteredTools.length > 0 ? (
-              <ToolGrid 
-                tools={filteredTools} 
-                onToolClick={onToolClick} 
-                showTrendingBadges={filterTab === 'Trending'}
-              />
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="py-24 text-center bg-white rounded-[3rem] border border-dashed border-slate-200"
-              >
-                <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-slate-300">
-                    <Search size={48} strokeWidth={1} />
+            {/* Interactive Grid & Favorites Section */}
+            {filterTab === 'Favorites' ? (
+              <div className="space-y-12">
+                {/* First Section: Pinned Shortcuts */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-slate-200/40">
+                    Pinned Shortcuts
+                  </h4>
+                  {favoritedTools.length === 0 ? (
+                    <div className="text-center py-20 text-slate-500 bg-white rounded-[2rem] border border-dashed border-slate-200/80">
+                      You haven&apos;t pinned any tools yet.
+                    </div>
+                  ) : filteredTools.length === 0 ? (
+                    <div className="text-center py-12 text-slate-400 bg-white rounded-[2rem] border border-dashed border-slate-200/80">
+                      No pinned shortcuts match your selected filters.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {filteredTools.map(tool => (
+                        <div key={tool.id}>
+                          <ToolCard
+                            tool={tool}
+                            onClick={() => handleToolLaunch(tool.slug)}
+                            isStarred={true}
+                            onStarToggle={handleToggleFavorite}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <h3 className="text-3xl font-black text-slate-900 mb-2 uppercase tracking-tight">No tools found</h3>
-                <p className="text-slate-500 font-medium max-w-sm mx-auto mb-10 leading-relaxed">
-                  No tools found matching "{searchQuery}". Try adjusting your search terms.
-                </p>
-                <button 
-                  onClick={() => {setSearchQuery(''); setActiveCategory('All'); setFilterTab('All');}}
-                  className="px-10 py-4 bg-[#0f4c75] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-[#0b395a] transition-all shadow-xl shadow-[#0f4c75]/20 hover:-translate-y-1"
+
+                {/* Second Section: Recently Used */}
+                {recentlyUsedTools.length > 0 && (
+                  <div className="space-y-4 pt-6 border-t border-slate-200/50">
+                    <h4 className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-slate-200/40">
+                      Recently Used
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {recentlyUsedTools.map(id => {
+                        const tool = TOOLS.find(t => t.id === id);
+                        if (!tool) return null;
+                        return (
+                          <div key={id}>
+                            <ToolCard
+                              tool={tool}
+                              onClick={() => handleToolLaunch(tool.slug)}
+                              isStarred={favoritedTools.includes(tool.id)}
+                              onStarToggle={handleToggleFavorite}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Non-Favorites Tabs Display standard grid */
+              filteredTools.length > 0 ? (
+                <ToolGrid 
+                  tools={filteredTools} 
+                  onToolClick={handleToolLaunch} 
+                  showTrendingBadges={filterTab === 'Trending'}
+                  favoritedTools={favoritedTools}
+                  onStarToggle={handleToggleFavorite}
+                />
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-24 text-center bg-white rounded-[3rem] border border-dashed border-slate-200"
                 >
-                  Reset Dashboard
-                </button>
-              </motion.div>
+                  <div className="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 text-slate-300">
+                    <Search size={48} strokeWidth={1} />
+                  </div>
+                  <h3 className="text-3xl font-black text-slate-900 mb-2 uppercase tracking-tight">No tools found</h3>
+                  <p className="text-slate-500 font-medium max-w-sm mx-auto mb-10 leading-relaxed">
+                    No tools found matching your current filters. Try resetting them.
+                  </p>
+                  <button 
+                    onClick={() => {setSearchQuery(''); setActiveCategory('All'); setFilterTab('All');}}
+                    className="px-10 py-4 bg-[#0f4c75] text-[#fff] rounded-2xl font-black uppercase tracking-widest hover:bg-[#0b395a] transition-all shadow-xl shadow-[#0f4c75]/20 hover:-translate-y-1"
+                  >
+                    Reset Dashboard
+                  </button>
+                </motion.div>
+              )
             )}
 
           </main>
@@ -400,6 +547,95 @@ export default function ToolsPage({ onToolClick, recentToolSlugs }: ToolsPagePro
            </div>
         </div>
       </div>
+
+      {/* Cmd+K Command Palette Modal */}
+      <AnimatePresence>
+        {isSearchModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] px-4 select-none">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSearchModalOpen(false)}
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Body */}
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-100 flex flex-col max-h-[70vh] overflow-hidden"
+            >
+              {/* Modal Input */}
+              <div className="flex items-center gap-4 px-6 border-b border-slate-100 py-5">
+                <Search size={22} className="text-slate-400" />
+                <input 
+                  autoFocus 
+                  type="text"
+                  placeholder="What do you need to do? (type to search...)" 
+                  value={modalSearchQuery}
+                  onChange={(e) => setModalSearchQuery(e.target.value)}
+                  className="w-full text-lg text-slate-900 border-none outline-none font-bold placeholder:text-slate-400 focus:ring-0 bg-transparent"
+                />
+                <button 
+                  onClick={() => setIsSearchModalOpen(false)}
+                  className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  <span className="text-xs font-black uppercase tracking-wider bg-slate-100 px-2 py-1 rounded text-slate-500">ESC</span>
+                </button>
+              </div>
+
+              {/* Modal Results */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <div className="px-3 pb-2 text-[10px] font-black uppercase tracking-widest text-[#94a3b8]">
+                  {modalSearchQuery ? 'Matching Toolkit Modules' : 'Popular Suggestions'}
+                </div>
+                {modalFilteredTools.length > 0 ? (
+                  modalFilteredTools.map(tool => {
+                    const Icon = tool.icon;
+                    const catSlug = Array.isArray(tool.category) ? tool.category[0] : tool.category;
+                    const catName = CATEGORIES.find(c => c.id === catSlug)?.name || catSlug;
+
+                    return (
+                      <button
+                        key={tool.id}
+                        onClick={() => {
+                          setIsSearchModalOpen(false);
+                          handleToolLaunch(tool.slug);
+                        }}
+                        className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 transition-colors rounded-xl text-left group cursor-pointer"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[#0f4c75] group-hover:bg-white group-hover:border-blue-200 transition-colors">
+                            <Icon size={18} />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{tool.name}</h4>
+                            <p className="text-xs text-slate-400 line-clamp-1">{tool.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] bg-slate-100 px-2.5 py-1 rounded">
+                            {catName}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-10">
+                    <p className="text-slate-500 font-bold text-sm">No tools found matching "{modalSearchQuery}"</p>
+                    <p className="text-xs text-slate-400 font-medium mt-1">Try another keyword like "invoice", "contrast" or "seo"</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

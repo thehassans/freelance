@@ -14,15 +14,21 @@ import {
   Palette,
   LayoutDashboard,
   Maximize2,
-  Code
+  Code,
+  Sparkles,
+  Check
 } from 'lucide-react';
+import { toast } from 'sonner';
 
-type Mode = 'smooth' | 'glassmorphism' | 'neumorphism';
+type Mode = 'glassmorphism' | 'smooth' | 'neumorphism' | 'mesh_gradient' | 'neon_glow';
 
 export default function AdvancedCssEngine() {
   const [activeMode, setActiveMode] = useState<Mode>('glassmorphism');
   const [copied, setCopied] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [format, setFormat] = useState<'css' | 'tailwind'>('css');
+  const [generateVars, setGenerateVars] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [hoverActive, setHoverActive] = useState(false);
 
   // Glassmorphism State
   const [glassBlur, setGlassBlur] = useState(12);
@@ -30,9 +36,16 @@ export default function AdvancedCssEngine() {
   const [glassColor, setGlassColor] = useState('#ffffff');
   const [glassOutline, setGlassOutline] = useState(true);
 
+  // Hover Glassmorphism State
+  const [hoverGlassBlur, setHoverGlassBlur] = useState(18);
+  const [hoverGlassTransparency, setHoverGlassTransparency] = useState(0.3);
+
   // Smooth Shadows State
-  const [elevation, setElevation] = useState(5);
+  const [elevation, setElevation] = useState(15);
   const [shadowColor, setShadowColor] = useState('0, 0, 0');
+
+  // Hover Smooth Shadows State
+  const [hoverElevation, setHoverElevation] = useState(30);
 
   // Neumorphism State
   const [baseColor, setBaseColor] = useState('#e0e5ec');
@@ -40,6 +53,32 @@ export default function AdvancedCssEngine() {
   const [intensity, setIntensity] = useState(0.15);
   const [neumorphBlur, setNeumorphBlur] = useState(20);
   const [shape, setShape] = useState<'flat' | 'pressed'>('flat');
+
+  // Hover Neumorphism State
+  const [hoverDistance, setHoverDistance] = useState(15);
+  const [hoverNeumorphBlur, setHoverNeumorphBlur] = useState(30);
+
+  // Mesh Gradient State
+  const [meshColor1, setMeshColor1] = useState('#4f46e5');
+  const [meshColor2, setMeshColor2] = useState('#ec4899');
+  const [meshColor3, setMeshColor3] = useState('#06b6d4');
+  const [meshColor4, setMeshColor4] = useState('#e11d48');
+
+  // Neon Glow State
+  const [neonColor, setNeonColor] = useState('#06b6d4');
+  const [neonIntensity, setNeonIntensity] = useState(20);
+  const [neonSpread, setNeonSpread] = useState(5);
+
+  // Hover Neon Glow State
+  const [hoverNeonIntensity, setHoverNeonIntensity] = useState(35);
+
+  const modeLabels: Record<Mode, string> = {
+    glassmorphism: 'GLASSMORPHISM',
+    smooth: 'SMOOTH SHADOWS',
+    neumorphism: 'NEUMORPHISM',
+    mesh_gradient: 'MESH GRADIENT',
+    neon_glow: 'NEON GLOW'
+  };
 
   // Helper: Hex to RGB
   const hexToRgb = (hex: string) => {
@@ -61,22 +100,80 @@ export default function AdvancedCssEngine() {
   };
 
   const styleData = useMemo(() => {
+    let preview: React.CSSProperties = {};
+    let hoverPreview: React.CSSProperties = {};
+    let cssText = '';
+    let tailwindClass = '';
+
+    const transitionCss = '\ntransition: all 0.3s ease;';
+    const transitionTailwind = 'transition-all duration-300';
+
     if (activeMode === 'glassmorphism') {
       const { r, g, b } = hexToRgb(glassColor);
       const background = `rgba(${r}, ${g}, ${b}, ${glassTransparency})`;
       const backdropFilter = `blur(${glassBlur}px)`;
-      const border = glassOutline ? `1px solid rgba(255, 255, 255, ${glassTransparency + 0.1})` : 'none';
+      const border = glassOutline ? `1px solid rgba(255, 255, 255, ${(glassTransparency + 0.1).toFixed(2)})` : 'none';
       
-      const css = `background: ${background};\nbackdrop-filter: ${backdropFilter};\n-webkit-backdrop-filter: ${backdropFilter};\nborder: ${border};\nborder-radius: 2.5rem;`;
-      
-      return { 
-        preview: { background, backdropFilter, WebkitBackdropFilter: backdropFilter, border, borderRadius: '2.5rem' },
-        css 
+      preview = { 
+        background, 
+        backdropFilter, 
+        WebkitBackdropFilter: backdropFilter, 
+        border, 
+        borderRadius: '2.5rem' 
       };
+
+      if (hoverActive) {
+        const hoverBg = `rgba(${r}, ${g}, ${b}, ${hoverGlassTransparency})`;
+        const hoverBlur = `blur(${hoverGlassBlur}px)`;
+        const hoverBorder = glassOutline ? `1px solid rgba(255, 255, 255, ${(hoverGlassTransparency + 0.1).toFixed(2)})` : 'none';
+        hoverPreview = {
+          background: hoverBg,
+          backdropFilter: hoverBlur,
+          WebkitBackdropFilter: hoverBlur,
+          border: hoverBorder
+        };
+      }
+
+      // CSS Variable mode output
+      if (generateVars && format === 'css') {
+        cssText = `:root {
+  --glass-bg: ${background};
+  --glass-blur: blur(${glassBlur}px);
+  --glass-border: ${border};
+  --glass-radius: 2.5rem;${hoverActive ? `\n  --glass-bg-hover: rgba(${r}, ${g}, ${b}, ${hoverGlassTransparency});\n  --glass-blur-hover: blur(${hoverGlassBlur}px);` : ''}
+}
+
+.premium-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--glass-radius);${hoverActive ? transitionCss : ''}
+}${hoverActive ? `\n\n.premium-card:hover {
+  background: var(--glass-bg-hover);
+  backdrop-filter: var(--glass-blur-hover);
+  -webkit-backdrop-filter: var(--glass-blur-hover);
+}` : ''}`;
+      } else {
+        cssText = `background: ${background};\nbackdrop-filter: ${backdropFilter};\n-webkit-backdrop-filter: ${backdropFilter};\nborder: ${border};\nborder-radius: 2.5rem;${hoverActive ? transitionCss : ''}`;
+        if (hoverActive) {
+          cssText += `\n\n.premium-card:hover {
+  background: rgba(${r}, ${g}, ${b}, ${hoverGlassTransparency});
+  backdrop-filter: blur(${hoverGlassBlur}px);
+  -webkit-backdrop-filter: blur(${hoverGlassBlur}px);
+}`;
+        }
+      }
+
+      const cleanBorder = glassOutline ? `border border-white/${Math.round((glassTransparency + 0.1) * 100)}` : '';
+      tailwindClass = `bg-[rgba(${r},${g},${b},${glassTransparency})] backdrop-blur-[${glassBlur}px] ${cleanBorder} rounded-[2.5rem]`;
+      if (hoverActive) {
+        const cleanHoverBorder = glassOutline ? `hover:border-white/${Math.round((hoverGlassTransparency + 0.1) * 100)}` : '';
+        tailwindClass += ` ${transitionTailwind} hover:bg-[rgba(${r},${g},${b},${hoverGlassTransparency})] hover:backdrop-blur-[${hoverGlassBlur}px] ${cleanHoverBorder}`;
+      }
     }
 
-    if (activeMode === 'smooth') {
-      // Exponential shadow layering
+    else if (activeMode === 'smooth') {
       const steps = elevation;
       const layers = [];
       for (let i = 1; i <= 5; i++) {
@@ -87,15 +184,59 @@ export default function AdvancedCssEngine() {
       }
       const boxShadow = layers.join(', ');
       const background = '#ffffff';
-      const css = `box-shadow: ${boxShadow};\nbackground: ${background};\nborder-radius: 2.5rem;`;
       
-      return { 
-        preview: { boxShadow, background, borderRadius: '2.5rem' },
-        css
+      preview = { 
+        boxShadow, 
+        background, 
+        borderRadius: '2.5rem' 
       };
+
+      let hoverBoxShadow = '';
+      if (hoverActive) {
+        const hoverLayers = [];
+        const hoverSteps = hoverElevation;
+        for (let i = 1; i <= 5; i++) {
+          const dist = Math.pow(i, 2) * (hoverSteps / 5);
+          const blur = Math.pow(i, 2.2) * (hoverSteps / 4);
+          const opacity = (0.18 / i).toFixed(2);
+          hoverLayers.push(`${dist}px ${dist}px ${blur}px rgba(${shadowColor}, ${opacity})`);
+        }
+        hoverBoxShadow = hoverLayers.join(', ');
+        hoverPreview = {
+          boxShadow: hoverBoxShadow
+        };
+      }
+
+      if (generateVars && format === 'css') {
+        cssText = `:root {
+  --smooth-bg: ${background};
+  --smooth-shadow: ${boxShadow};
+  --smooth-radius: 2.5rem;${hoverActive ? `\n  --smooth-shadow-hover: ${hoverBoxShadow};` : ''}
+}
+
+.premium-card {
+  background: var(--smooth-bg);
+  box-shadow: var(--smooth-shadow);
+  border-radius: var(--smooth-radius);${hoverActive ? transitionCss : ''}
+}${hoverActive ? `\n\n.premium-card:hover {
+  box-shadow: var(--smooth-shadow-hover);
+}` : ''}`;
+      } else {
+        cssText = `background: ${background};\nbox-shadow: ${boxShadow};\nborder-radius: 2.5rem;${hoverActive ? transitionCss : ''}`;
+        if (hoverActive) {
+          cssText += `\n\n.premium-card:hover {
+  box-shadow: ${hoverBoxShadow};
+}`;
+        }
+      }
+
+      tailwindClass = `bg-white shadow-[${boxShadow}] rounded-[2.5rem]`;
+      if (hoverActive) {
+        tailwindClass += ` ${transitionTailwind} hover:shadow-[${hoverBoxShadow}]`;
+      }
     }
 
-    if (activeMode === 'neumorphism') {
+    else if (activeMode === 'neumorphism') {
       const lightColor = adjustColor(baseColor, 40);
       const darkColor = adjustColor(baseColor, -20);
       const shadowDist = distance;
@@ -108,37 +249,210 @@ export default function AdvancedCssEngine() {
         boxShadow = `inset ${shadowDist}px ${shadowDist}px ${blurVal}px ${darkColor}, inset -${shadowDist}px -${shadowDist}px ${blurVal}px ${lightColor}`;
       }
       
-      const css = `background: ${baseColor};\nbox-shadow: ${boxShadow};\nborder-radius: 2.5rem;`;
-      
-      return {
-        preview: { background: baseColor, boxShadow, borderRadius: '2.5rem' },
-        css
+      preview = { 
+        background: baseColor, 
+        boxShadow, 
+        borderRadius: '2.5rem' 
       };
+
+      let hoverBoxShadow = '';
+      if (hoverActive) {
+        const hoverLightColor = adjustColor(baseColor, 45);
+        const hoverDarkColor = adjustColor(baseColor, -25);
+        const hDist = hoverDistance;
+        const hBlur = hoverNeumorphBlur;
+        if (shape === 'flat') {
+          hoverBoxShadow = `${hDist}px ${hDist}px ${hBlur}px ${hoverDarkColor}, -${hDist}px -${hDist}px ${hBlur}px ${hoverLightColor}`;
+        } else {
+          hoverBoxShadow = `inset ${hDist}px ${hDist}px ${hBlur}px ${hoverDarkColor}, inset -${hDist}px -${hDist}px ${hBlur}px ${hoverLightColor}`;
+        }
+        hoverPreview = {
+          boxShadow: hoverBoxShadow
+        };
+      }
+
+      if (generateVars && format === 'css') {
+        cssText = `:root {
+  --neumorph-bg: ${baseColor};
+  --neumorph-shadow: ${boxShadow};
+  --neumorph-radius: 2.5rem;${hoverActive ? `\n  --neumorph-shadow-hover: ${hoverBoxShadow};` : ''}
+}
+
+.premium-card {
+  background: var(--neumorph-bg);
+  box-shadow: var(--neumorph-shadow);
+  border-radius: var(--neumorph-radius);${hoverActive ? transitionCss : ''}
+}${hoverActive ? `\n\n.premium-card:hover {
+  box-shadow: var(--neumorph-shadow-hover);
+}` : ''}`;
+      } else {
+        cssText = `background: ${baseColor};\nbox-shadow: ${boxShadow};\nborder-radius: 2.5rem;${hoverActive ? transitionCss : ''}`;
+        if (hoverActive) {
+          cssText += `\n\n.premium-card:hover {
+  box-shadow: ${hoverBoxShadow};
+}`;
+        }
+      }
+
+      tailwindClass = `bg-[${baseColor}] shadow-[${boxShadow}] rounded-[2.5rem]`;
+      if (hoverActive) {
+        tailwindClass += ` ${transitionTailwind} hover:shadow-[${hoverBoxShadow}]`;
+      }
     }
 
-    return { preview: {}, css: '' };
-  }, [activeMode, glassBlur, glassTransparency, glassColor, glassOutline, elevation, shadowColor, baseColor, distance, intensity, neumorphBlur, shape]);
+    else if (activeMode === 'mesh_gradient') {
+      const bgVal = `radial-gradient(at 10% 20%, ${meshColor1} 0px, transparent 50%), radial-gradient(at 80% 10%, ${meshColor2} 0px, transparent 50%), radial-gradient(at 40% 90%, ${meshColor3} 0px, transparent 50%), radial-gradient(at 90% 80%, ${meshColor4} 0px, transparent 50%)`;
+      
+      preview = {
+        backgroundColor: meshColor1,
+        backgroundImage: bgVal,
+        borderRadius: '2.5rem'
+      };
+
+      const hoverBgVal = `radial-gradient(at 20% 30%, ${meshColor1} 0px, transparent 55%), radial-gradient(at 70% 20%, ${meshColor2} 0px, transparent 55%), radial-gradient(at 50% 80%, ${meshColor3} 0px, transparent 55%), radial-gradient(at 80% 70%, ${meshColor4} 0px, transparent 55%)`;
+
+      if (hoverActive) {
+        hoverPreview = {
+          backgroundImage: hoverBgVal
+        };
+      }
+
+      if (generateVars && format === 'css') {
+        cssText = `:root {
+  --mesh-bg-color: ${meshColor1};
+  --mesh-bg-image: ${bgVal};
+  --mesh-radius: 2.5rem;${hoverActive ? `\n  --mesh-bg-image-hover: ${hoverBgVal};` : ''}
+}
+
+.premium-card {
+  background-color: var(--mesh-bg-color);
+  background-image: var(--mesh-bg-image);
+  border-radius: var(--mesh-radius);${hoverActive ? transitionCss : ''}
+}${hoverActive ? `\n\n.premium-card:hover {
+  background-image: var(--mesh-bg-image-hover);
+}` : ''}`;
+      } else {
+        cssText = `background-color: ${meshColor1};\nbackground-image: ${bgVal};\nborder-radius: 2.5rem;${hoverActive ? transitionCss : ''}`;
+        if (hoverActive) {
+          cssText += `\n\n.premium-card:hover {
+  background-image: ${hoverBgVal};
+}`;
+        }
+      }
+
+      tailwindClass = `bg-[${meshColor1}] bg-[radial-gradient(at_10%_20%,${meshColor1}_0px,transparent_50%),radial-gradient(at_80%_10%,${meshColor2}_0px,transparent_50%),radial-gradient(at_40%_90%,${meshColor3}_0px,transparent_50%),radial-gradient(at_90%_80%,${meshColor4}_0px,transparent_50%)] rounded-[2.5rem]`;
+      if (hoverActive) {
+        tailwindClass += ` ${transitionTailwind} hover:bg-[radial-gradient(at_20%_30%,${meshColor1}_0px,transparent_55%),radial-gradient(at_70%_20%,${meshColor2}_0px,transparent_55%),radial-gradient(at_50%_80%,${meshColor3}_0px,transparent_55%),radial-gradient(at_80%_70%,${meshColor4}_0px,transparent_55%)]`;
+      }
+    }
+
+    else if (activeMode === 'neon_glow') {
+      const neonShadow = `0 0 ${neonIntensity}px ${neonColor}, inset 0 0 ${Math.round(neonIntensity / 2)}px ${neonColor}`;
+      const border = `1px solid ${neonColor}`;
+      const textShadow = `0 0 ${Math.round(neonIntensity / 2)}px ${neonColor}`;
+
+      preview = {
+        backgroundColor: '#0f172a',
+        border,
+        boxShadow: neonShadow,
+        borderRadius: '2.5rem'
+      };
+
+      let hoverNeonShadow = '';
+      if (hoverActive) {
+        hoverNeonShadow = `0 0 ${hoverNeonIntensity}px ${neonColor}, inset 0 0 ${Math.round(hoverNeonIntensity / 2)}px ${neonColor}`;
+        hoverPreview = {
+          boxShadow: hoverNeonShadow
+        };
+      }
+
+      if (generateVars && format === 'css') {
+        cssText = `:root {
+  --neon-bg: #0f172a;
+  --neon-border: ${border};
+  --neon-shadow: ${neonShadow};
+  --neon-text-shadow: ${textShadow};
+  --neon-radius: 2.5rem;${hoverActive ? `\n  --neon-shadow-hover: ${hoverNeonShadow};` : ''}
+}
+
+.premium-card {
+  background-color: var(--neon-bg);
+  border: var(--neon-border);
+  box-shadow: var(--neon-shadow);
+  border-radius: var(--neon-radius);${hoverActive ? transitionCss : ''}
+}
+
+.premium-card .neon-text {
+  text-shadow: var(--neon-text-shadow);
+}${hoverActive ? `\n\n.premium-card:hover {
+  box-shadow: var(--neon-shadow-hover);
+}` : ''}`;
+      } else {
+        cssText = `background-color: #0f172a;\nborder: ${border};\nbox-shadow: ${neonShadow};\nborder-radius: 2.5rem;${hoverActive ? transitionCss : ''}`;
+        if (hoverActive) {
+          cssText += `\n\n.premium-card:hover {
+  box-shadow: ${hoverNeonShadow};
+}`;
+        }
+      }
+
+      tailwindClass = `bg-[#0f172a] border border-[${neonColor}] shadow-[0_0_${neonIntensity}px_${neonColor},inset_0_0_${Math.round(neonIntensity / 2)}px_${neonColor}] rounded-[2.5rem]`;
+      if (hoverActive) {
+        tailwindClass += ` ${transitionTailwind} hover:shadow-[0_0_${hoverNeonIntensity}px_${neonColor},inset_0_0_${Math.round(hoverNeonIntensity / 2)}px_${neonColor}]`;
+      }
+    }
+
+    return {
+      preview,
+      hoverPreview,
+      css: format === 'tailwind' ? tailwindClass : cssText
+    };
+  }, [
+    activeMode, 
+    glassBlur, 
+    glassTransparency, 
+    glassColor, 
+    glassOutline, 
+    elevation, 
+    shadowColor, 
+    baseColor, 
+    distance, 
+    intensity, 
+    neumorphBlur, 
+    shape,
+    hoverActive,
+    hoverGlassBlur,
+    hoverGlassTransparency,
+    hoverElevation,
+    hoverDistance,
+    hoverNeumorphBlur,
+    meshColor1,
+    meshColor2,
+    meshColor3,
+    meshColor4,
+    neonColor,
+    neonIntensity,
+    neonSpread,
+    hoverNeonIntensity,
+    format,
+    generateVars
+  ]);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(styleData.css);
     setCopied(true);
+    toast.success('CSS classes copied successfully!');
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const faqs = [
-    {
-      question: "What is Glassmorphism?",
-      answer: "Glassmorphism is a UI design trend that uses backdrop-filter: blur to create a frosted glass effect. It allows the background content to bleed through in a blurry, elegant way, creating hierarchy and depth in modern web interfaces."
-    },
-    {
-      question: "Why use layered smooth shadows?",
-      answer: "A single CSS box-shadow often looks harsh and artificial because it doesn't mimic how light actually falls off in the physical world. Layering 4-6 shadows with decreasing opacity and increasing blur creates a 'smooth' gradient effect that provides natural depth, often seen in premium designs from Stripe or Apple."
-    },
-    {
-      question: "Is backdrop-filter supported on all browsers?",
-      answer: "Modern browsers (Chrome, Safari, Edge, Firefox) have excellent support for backdrop-filter. However, it requires the -webkit prefix for Safari. It is always good practice to provide a slightly more opaque background-color as a fallback for very old browsers."
-    }
-  ];
+  const activeStyle = {
+    ...styleData.preview,
+    ...(isHovered && hoverActive ? styleData.hoverPreview : {}),
+    transition: hoverActive ? 'all 0.3s ease' : 'none'
+  };
+
+  const neonTextColor = activeMode === 'neon_glow' ? neonColor : (activeMode === 'smooth' || activeMode === 'neumorphism' ? '#0f172a' : '#ffffff');
+  const neonTextShadow = activeMode === 'neon_glow' ? `0 0 ${Math.round((isHovered && hoverActive ? hoverNeonIntensity : neonIntensity) / 2)}px ${neonColor}` : 'none';
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 pb-32">
@@ -155,24 +469,27 @@ export default function AdvancedCssEngine() {
           Advanced <span className="text-indigo-600">CSS Effects</span> Engine
         </h1>
         <p className="text-slate-500 max-w-2xl mx-auto font-medium text-lg leading-relaxed">
-          Generate production-ready CSS for premium Glassmorphism, smooth multi-layered shadows, and Neumorphic components.
+          Generate production-ready CSS and Tailwind utility codes for next-gen UI components. Build Glassmorphism, Neumorphism, Mesh Gradients, and Neon Glow cards in seconds.
         </p>
       </div>
 
-      {/* Mode Toggle */}
+      {/* Mode Navigation Pills */}
       <div className="flex justify-center mb-12">
-        <div className="bg-slate-100 p-1.5 rounded-2xl flex gap-1 shadow-inner border border-slate-200/50">
-          {(['glassmorphism', 'smooth', 'neumorphism'] as Mode[]).map((mode) => (
+        <div className="bg-slate-100 p-2 rounded-2xl flex flex-wrap gap-1 shadow-inner border border-slate-200/50 justify-center">
+          {(['glassmorphism', 'smooth', 'neumorphism', 'mesh_gradient', 'neon_glow'] as Mode[]).map((mode) => (
             <button
               key={mode}
-              onClick={() => setActiveMode(mode)}
-              className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              onClick={() => {
+                setActiveMode(mode);
+                setIsHovered(false);
+              }}
+              className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer ${
                 activeMode === mode 
                   ? 'bg-white text-indigo-600 shadow-sm' 
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              {mode}
+              {modeLabels[mode]}
             </button>
           ))}
         </div>
@@ -211,7 +528,7 @@ export default function AdvancedCssEngine() {
                     </div>
                     <div>
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-3">Outline</label>
-                      <button onClick={() => setGlassOutline(!glassOutline)} className={`w-full h-12 rounded-xl font-black text-[10px] uppercase tracking-widest border transition-all ${glassOutline ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
+                      <button onClick={() => setGlassOutline(!glassOutline)} className={`w-full h-12 rounded-xl font-black text-[10px] uppercase tracking-widest border transition-all cursor-pointer ${glassOutline ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
                         {glassOutline ? 'Active' : 'Disabled'}
                       </button>
                     </div>
@@ -234,7 +551,7 @@ export default function AdvancedCssEngine() {
                         <button 
                           key={rgb}
                           onClick={() => setShadowColor(rgb)}
-                          className={`w-12 h-12 rounded-full border-2 transition-all ${shadowColor === rgb ? 'border-indigo-600 scale-110 shadow-lg' : 'border-transparent opacity-50'}`}
+                          className={`w-12 h-12 rounded-full border-2 transition-all cursor-pointer ${shadowColor === rgb ? 'border-indigo-600 scale-110 shadow-lg' : 'border-transparent opacity-50'}`}
                           style={{ backgroundColor: `rgb(${rgb})` }}
                         />
                       ))}
@@ -270,7 +587,7 @@ export default function AdvancedCssEngine() {
                         <button 
                           key={s}
                           onClick={() => setShape(s as any)}
-                          className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${shape === s ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-400 border-slate-200'}`}
+                          className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all cursor-pointer ${shape === s ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-400 border-slate-200'}`}
                         >
                           {s}
                         </button>
@@ -279,6 +596,143 @@ export default function AdvancedCssEngine() {
                   </div>
                 </>
               )}
+
+              {activeMode === 'mesh_gradient' && (
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-3">Mesh Color Swatches</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Color 1 (Base)</span>
+                      <input type="color" value={meshColor1} onChange={(e) => setMeshColor1(e.target.value)} className="w-full h-11 rounded-xl cursor-pointer bg-slate-50 border border-slate-200 p-1" />
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Color 2</span>
+                      <input type="color" value={meshColor2} onChange={(e) => setMeshColor2(e.target.value)} className="w-full h-11 rounded-xl cursor-pointer bg-slate-50 border border-slate-200 p-1" />
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Color 3</span>
+                      <input type="color" value={meshColor3} onChange={(e) => setMeshColor3(e.target.value)} className="w-full h-11 rounded-xl cursor-pointer bg-slate-50 border border-slate-200 p-1" />
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Color 4</span>
+                      <input type="color" value={meshColor4} onChange={(e) => setMeshColor4(e.target.value)} className="w-full h-11 rounded-xl cursor-pointer bg-slate-50 border border-slate-200 p-1" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeMode === 'neon_glow' && (
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-3">Neon Luminous Color</label>
+                    <input type="color" value={neonColor} onChange={(e) => setNeonColor(e.target.value)} className="w-full h-12 rounded-xl cursor-pointer bg-slate-50 border border-slate-200 p-1" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-3 px-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Glow Intensity ({neonIntensity}px)</label>
+                    </div>
+                    <input type="range" min="1" max="50" value={neonIntensity} onChange={(e) => setNeonIntensity(parseInt(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer" />
+                  </div>
+                </div>
+              )}
+
+              {/* Hover State Toggle under parameters */}
+              <div className="pt-6 border-t border-slate-100 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Configure Hover State</span>
+                    <span className="text-xs text-slate-400 block leading-normal">Reveal and output secondary hover transitions</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setHoverActive(!hoverActive);
+                      setIsHovered(false);
+                    }}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      hoverActive ? 'bg-indigo-600' : 'bg-slate-200'
+                    }`}
+                    aria-label="Toggle Hover Configuration"
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                        hoverActive ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Secondary hover sliders if active */}
+                <AnimatePresence>
+                  {hoverActive && (
+                    <motion.div 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="space-y-6 pt-4 border-t border-dashed border-slate-100 overflow-hidden"
+                    >
+                      {activeMode === 'glassmorphism' && (
+                        <>
+                          <div>
+                            <div className="flex justify-between mb-3 px-1">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hover Blur ({hoverGlassBlur}px)</label>
+                            </div>
+                            <input type="range" min="0" max="40" value={hoverGlassBlur} onChange={(e) => setHoverGlassBlur(parseInt(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between mb-3 px-1">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hover Transparency ({Math.round(hoverGlassTransparency * 100)}%)</label>
+                            </div>
+                            <input type="range" min="0" max="1" step="0.01" value={hoverGlassTransparency} onChange={(e) => setHoverGlassTransparency(parseFloat(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer" />
+                          </div>
+                        </>
+                      )}
+
+                      {activeMode === 'smooth' && (
+                        <div>
+                          <div className="flex justify-between mb-3 px-1">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hover Elevation ({hoverElevation})</label>
+                          </div>
+                          <input type="range" min="1" max="100" value={hoverElevation} onChange={(e) => setHoverElevation(parseInt(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer" />
+                        </div>
+                      )}
+
+                      {activeMode === 'neumorphism' && (
+                        <>
+                          <div>
+                            <div className="flex justify-between mb-3 px-1">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hover Distance ({hoverDistance}px)</label>
+                            </div>
+                            <input type="range" min="1" max="50" value={hoverDistance} onChange={(e) => setHoverDistance(parseInt(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer" />
+                          </div>
+                          <div>
+                            <div className="flex justify-between mb-3 px-1">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hover Blur ({hoverNeumorphBlur}px)</label>
+                            </div>
+                            <input type="range" min="1" max="100" value={hoverNeumorphBlur} onChange={(e) => setHoverNeumorphBlur(parseInt(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer" />
+                          </div>
+                        </>
+                      )}
+
+                      {activeMode === 'mesh_gradient' && (
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Hover Mesh Dynamic State</span>
+                          <p className="text-xs text-slate-400 leading-relaxed">Hovering shifts coordinates of radial gradient center-points dynamically to simulate advanced physics aesthetics.</p>
+                        </div>
+                      )}
+
+                      {activeMode === 'neon_glow' && (
+                        <div>
+                          <div className="flex justify-between mb-3 px-1">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hover Neon Glow Intensity ({hoverNeonIntensity}px)</label>
+                          </div>
+                          <input type="range" min="1" max="100" value={hoverNeonIntensity} onChange={(e) => setHoverNeonIntensity(parseInt(e.target.value))} className="w-full accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer" />
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </section>
         </div>
@@ -297,35 +751,89 @@ export default function AdvancedCssEngine() {
                {/* The Preview Card */}
                <motion.div 
                  layout
-                 style={styleData.preview}
-                 className="w-full max-w-[280px] h-[280px] relative z-10 flex flex-col items-center justify-center gap-6 p-8 shadow-2xl transition-all duration-300 transform-gpu"
+                 style={activeStyle}
+                 onMouseEnter={() => setIsHovered(true)}
+                 onMouseLeave={() => setIsHovered(false)}
+                 className="w-full max-w-[280px] h-[280px] relative z-10 flex flex-col items-center justify-center gap-6 p-8 shadow-2xl transition-all duration-300 transform-gpu cursor-pointer"
                >
-                  <div className={`p-4 rounded-2xl ${activeMode === 'smooth' || activeMode === 'neumorphism' ? 'bg-indigo-50 text-indigo-600' : 'bg-white/20 text-white shadow-xl backdrop-blur-md'}`}>
-                    <LayoutDashboard size={40} />
+                  <div 
+                    className={`p-4 rounded-2xl transition-all duration-300 ${
+                      activeMode === 'smooth' || activeMode === 'neumorphism' 
+                        ? 'bg-indigo-50 text-indigo-600' 
+                        : (activeMode === 'neon_glow' 
+                           ? 'bg-slate-950 text-slate-50 border' 
+                           : 'bg-white/20 text-white shadow-xl backdrop-blur-md')
+                    }`}
+                    style={activeMode === 'neon_glow' ? { borderColor: neonColor, boxShadow: `0 0 ${Math.round((isHovered && hoverActive ? hoverNeonIntensity : neonIntensity) / 3)}px ${neonColor}` } : {}}
+                  >
+                    <LayoutDashboard size={40} style={activeMode === 'neon_glow' ? { color: neonColor, filter: `drop-shadow(0 0 5px ${neonColor})` } : {}} />
                   </div>
                   <div className="text-center">
-                    <p className={`font-black uppercase tracking-widest text-[10px] mb-1 ${activeMode === 'smooth' || activeMode === 'neumorphism' ? 'text-slate-400' : 'text-white/60'}`}>Preview Canvas</p>
-                    <p className={`font-black text-xl flex items-center gap-2 ${activeMode === 'smooth' || activeMode === 'neumorphism' ? 'text-slate-900' : 'text-white'}`}>
-                      Enterprise UI <Zap size={16} className="text-indigo-500" />
+                    <p className={`font-black uppercase tracking-widest text-[10px] mb-2 ${activeMode === 'smooth' || activeMode === 'neumorphism' ? 'text-slate-405' : 'text-white/60'}`} style={activeMode === 'neon_glow' ? { color: neonColor, textShadow: neonTextShadow } : {}}>
+                      {hoverActive && isHovered ? 'Hover Active' : 'Preview Canvas'}
+                    </p>
+                    <p 
+                      className={`font-black text-xl flex items-center justify-center gap-2 transition-all duration-300 ${
+                        activeMode === 'smooth' || activeMode === 'neumorphism' 
+                          ? 'text-slate-900' 
+                          : 'text-white'
+                      }`}
+                      style={{ color: neonTextColor, textShadow: neonTextShadow }}
+                    >
+                      Enterprise UI <Zap size={16} className={activeMode === 'neon_glow' ? '' : 'text-indigo-500'} style={activeMode === 'neon_glow' ? { color: neonColor, filter: `drop-shadow(0 0 5px ${neonColor})` } : {}} />
                     </p>
                   </div>
                </motion.div>
             </div>
 
             <div className="mt-8 px-4 pb-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                  <Code size={14} className="text-indigo-500" /> CSS Output
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                    <Code size={14} className="text-indigo-500" /> CSS Output
+                  </div>
+
+                  {/* Format selector */}
+                  <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                    <button
+                      onClick={() => setFormat('css')}
+                      className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer ${format === 'css' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      Raw CSS
+                    </button>
+                    <button
+                      onClick={() => setFormat('tailwind')}
+                      className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest transition-all cursor-pointer ${format === 'tailwind' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                      Tailwind
+                    </button>
+                  </div>
                 </div>
-                <button 
-                  onClick={handleCopy}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${copied ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
-                >
-                  {copied ? <><CheckCircle2 size={14} /> Copied</> : <><Copy size={14} /> Copy Styles</>}
-                </button>
+
+                <div className="flex items-center gap-4">
+                  {format === 'css' && (
+                    <label className="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-600 transition-colors select-none">
+                      <input 
+                        type="checkbox" 
+                        checked={generateVars} 
+                        onChange={(e) => setGenerateVars(e.target.checked)}
+                        className="rounded text-indigo-600 focus:ring-indigo-505 border-slate-300 h-3.5 w-3.5 cursor-pointer"
+                      />
+                      <span className="text-[9.5px] font-black uppercase tracking-wider">Generate CSS Variables</span>
+                    </label>
+                  )}
+
+                  <button 
+                    onClick={handleCopy}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${copied ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                  >
+                    {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy Code</>}
+                  </button>
+                </div>
               </div>
+              
               <div className="relative group/code">
-                <pre className="bg-slate-900 text-indigo-400 p-8 rounded-3xl font-mono text-sm overflow-x-auto border border-slate-800 shadow-xl max-h-[160px] custom-scrollbar">
+                <pre className="bg-slate-900 text-indigo-400 p-8 rounded-3xl font-mono text-xs overflow-x-auto border border-slate-800 shadow-xl max-h-[220px] custom-scrollbar">
                   <code>{styleData.css}</code>
                 </pre>
                 <div className="absolute inset-0 bg-indigo-500/5 blur-xl pointer-events-none opacity-0 group-hover/code:opacity-100 transition-opacity" />
@@ -335,139 +843,62 @@ export default function AdvancedCssEngine() {
         </div>
       </div>
 
-      {/* SEO Content Section */}
-      <section className="mt-32 space-y-24">
-        {/* Value Prop */}
-        <div className="max-w-4xl mx-auto">
-           <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Design enterprise-grade UI components in seconds.</h2>
-           </div>
-           <div className="bg-white border border-slate-200 p-8 md:p-16 rounded-[3.5rem] shadow-sm relative group overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                 <RefreshCw size={40} className="text-indigo-600" />
-              </div>
-              <div className="prose prose-slate max-w-none prose-lg font-medium text-slate-600 leading-relaxed">
-                 <p>
-                    Modern web design requires complex CSS math. Stop guessing alpha channels and layering multiple drop-shadows by hand. Generate production-ready code for Glassmorphism, Neumorphism, and multi-layered Smooth Shadows instantly.
-                 </p>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-10">
-                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
-                       <h4 className="text-slate-900 font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-                         <Layers size={14} className="text-indigo-600" /> Natural Depth
-                       </h4>
-                       <p className="text-sm text-slate-500 leading-normal">
-                         Our linear and exponential shadow algorithms recreate how light interacts with surfaces, avoiding the "floaty" look of standard single shadows.
-                       </p>
-                    </div>
-                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
-                       <h4 className="text-slate-900 font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-                         <Maximize2 size={14} className="text-pink-600" /> Real-time Preview
-                       </h4>
-                       <p className="text-sm text-slate-500 leading-normal">
-                         Instantly visualize how your styles will look against dynamic background patterns, ensuring readability and visual balance before you commit to code.
-                       </p>
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </div>
+      {/* Strictly Isolated SEO Content Section */}
+      <section className="w-full max-w-5xl mx-auto mt-24 pt-12 border-t border-slate-200 prose prose-slate max-w-none print:hidden">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">What is the Advanced CSS Effects Engine?</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8">
+          The Advanced CSS Effects Engine is a production-ready code generator designed for UI/UX designers and front-end developers. It removes the guesswork from creating complex, multi-layered visual styles like Glassmorphism and Neumorphism by instantly generating perfectly calculated, cross-browser compatible CSS and Tailwind utility classes.
+        </p>
 
-        {/* Comparison Section */}
-        <div className="max-w-7xl mx-auto px-4">
-           <div className="bg-slate-900 rounded-[4rem] p-12 md:p-24 text-white relative overflow-hidden flex flex-col md:flex-row items-center gap-16 shadow-2xl">
-              <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-500/10 blur-3xl -ml-48 -mt-48 rounded-full" />
-              <div className="w-full md:w-1/2 space-y-8 relative z-10">
-                 <div className="p-3 bg-red-500/20 text-red-400 rounded-2xl w-fit">
-                    <Sun size={32} />
-                 </div>
-                 <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">
-                    Beyond Standard <br/>Shadow Presets.
-                 </h2>
-                 <p className="text-xl text-slate-400 font-medium leading-relaxed">
-                    Most developers rely on standard library shadows that lack character. Our engine treats CSS as a photographic medium.
-                 </p>
-                 <div className="flex flex-col gap-4">
-                    <div className="p-6 bg-white/5 border border-white/10 rounded-3xl">
-                       <p className="text-[10px] font-black uppercase text-indigo-400 mb-2 tracking-widest">The Secret Sauce</p>
-                       <p className="text-sm text-slate-300">We use a layered approach with variable alpha curves, making elements feel anchored and physical rather than just "lifted" off the page.</p>
-                    </div>
-                 </div>
-              </div>
-              <div className="w-full md:w-1/2 grid grid-cols-2 gap-4 relative z-10">
-                 <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] flex flex-col items-center text-center">
-                    <div className="w-16 h-16 bg-white/10 rounded-2xl mb-4 shadow-xl" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Standard</p>
-                    <p className="text-xs font-bold text-slate-400 italic">One Layer</p>
-                 </div>
-                 <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] flex flex-col items-center text-center border-indigo-500/30">
-                    <div className="w-16 h-16 bg-white rounded-2xl mb-4 shadow-[5px_5px_10px_rgba(0,0,0,0.1),15px_15px_30px_rgba(0,0,0,0.05)]" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-1">Premium</p>
-                    <p className="text-xs font-bold text-white italic">6 Layers</p>
-                 </div>
-              </div>
-           </div>
-        </div>
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">Why Modern Web Design Requires Advanced CSS</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-4">
+          Flat design is evolving. To create depth, hierarchy, and premium visual experiences, modern web applications rely on advanced styling techniques. However, writing these styles manually often requires stacking multiple box-shadows, calculating backdrop-filters, and managing complex RGBA alpha channels.
+        </p>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8">
+          Our engine automates this math, ensuring your design systems remain consistent, accessible, and performant.
+        </p>
 
-        {/* FAQ Accordion */}
-        <div className="max-w-4xl mx-auto px-4">
-           <div className="text-center mb-16 px-4">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Design Engineering FAQ</h2>
-              <p className="text-slate-500 font-medium">Technical insights into modern CSS styling techniques.</p>
-           </div>
-           <div className="space-y-4">
-              {faqs.map((faq, idx) => (
-                <div 
-                  key={idx}
-                  className={`bg-white rounded-3xl border border-slate-200 transition-all overflow-hidden ${openFaq === idx ? 'shadow-xl shadow-indigo-200/50 border-indigo-100' : ''}`}
-                >
-                  <button 
-                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                    className="w-full flex items-center justify-between p-8 text-left"
-                  >
-                    <span className="text-lg md:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                      <HelpCircle size={20} className="text-indigo-400" />
-                      {faq.question}
-                    </span>
-                    <ChevronDown className={`text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {openFaq === idx && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                      >
-                        <div className="px-8 pb-8 pl-16">
-                          <p className="text-slate-500 leading-relaxed font-medium">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-           </div>
-        </div>
-      </section>
-
-      {/* CTA Footer */}
-      <section className="mt-32 max-w-7xl mx-auto px-4">
-        <div className="bg-indigo-600 rounded-[3.5rem] p-12 md:p-24 text-center relative overflow-hidden text-white shadow-2xl">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 blur-3xl -ml-48 -mt-48 rounded-full" />
-          <div className="relative z-10">
-            <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tight text-balance">Elevate Your <br/>Style Definition.</h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-12 font-medium">
-              Join thousands of precision engineers who use our engine to build high-fidelity components for modern web apps.
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">Core Effects Explained</h2>
+        
+        <div className="space-y-6 mb-8">
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">1. Glassmorphism</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              A design trend that mimics the look of frosted glass. It uses background blur, semi-transparent backgrounds, and subtle light borders to create a sense of vertical depth, allowing underlying colors or images to bleed through softly. Perfect for modern dashboard modals, sticky navigation bars, and premium SaaS landing pages.
             </p>
-            <button 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="px-12 py-6 bg-white text-indigo-600 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-2xl shadow-black/20 flex items-center gap-3 mx-auto group"
-            >
-              Start Generating <Palette size={18} className="group-hover:translate-x-1.5 transition-transform" />
-            </button>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">2. Neumorphism (Soft UI)</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              A visual style that blends background colors, shapes, gradients, highlights, and shadows to make UI elements appear as if they are extruded from the background itself. It relies heavily on precise, multi-layered box-shadow properties to create "pushed in" or "popped out" states.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">3. Mesh Gradients</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              Free-flowing, multi-color gradients that blend smoothly together. Unlike rigid linear or radial gradients, mesh gradients provide a highly organic, fluid aesthetic that serves as a perfect backdrop for hero sections and modern branding.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">4. Neon Glow</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              Utilizing intensely saturated drop-shadows and text-shadows against dark mode backgrounds to create luminous, cyberpunk-inspired glowing interfaces.
+            </p>
           </div>
         </div>
+
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">Streamlining the Developer Workflow</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-4">
+          Getting the visual look right is only half the battle. This tool is built for implementation:
+        </p>
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 font-medium mb-8">
+          <li><strong>Tailwind CSS Integration:</strong> Stop translating raw CSS. Toggle the output to instantly generate a string of Tailwind utility classes ready to be pasted into your React, Next.js, or Vue components.</li>
+          <li><strong>CSS Variables:</strong> Export your generated parameters as CSS custom properties to easily integrate them into your global enterprise design system.</li>
+          <li><strong>Interactive States:</strong> Automatically generate the required transition rules and :hover states to ensure your UI feels alive and responsive to user input.</li>
+        </ul>
       </section>
     </div>
   );

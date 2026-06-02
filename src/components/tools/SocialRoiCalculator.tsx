@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Heart
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function SocialRoiCalculator() {
   const [adSpend, setAdSpend] = useState<string>('3000');
@@ -23,7 +24,7 @@ export default function SocialRoiCalculator() {
   const [leadsGenerated, setLeadsGenerated] = useState<string>('150');
   const [closeRate, setCloseRate] = useState<number>(20);
   const [ltv, setLtv] = useState<string>('5000');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [exportCredits, setExportCredits] = useState(5);
 
   const stats = useMemo(() => {
     const spend = parseFloat(adSpend) || 0;
@@ -45,9 +46,31 @@ export default function SocialRoiCalculator() {
       roi: roi.toFixed(0),
       cac: formatCur(cac),
       customers: Math.floor(newCustomers),
-      isPositive: roi > 0
+      isPositive: roi > 0,
+      rawCac: cac,
+      rawLtv: valLtv
     };
   }, [adSpend, agencyFee, leadsGenerated, closeRate, ltv]);
+
+  const ratioVal = useMemo(() => {
+    return stats.rawCac > 0 ? stats.rawLtv / stats.rawCac : 0;
+  }, [stats]);
+
+  const ratioRefFormatted = useMemo(() => {
+    if (ratioVal === 0) return '0:1';
+    const formatted = ratioVal.toFixed(1).replace(/\.0$/, '');
+    return `${formatted}:1`;
+  }, [ratioVal]);
+
+  const handleExportPDF = () => {
+    if (exportCredits > 0) {
+      setExportCredits(prev => prev - 1);
+      toast.success('ROI Report Exported');
+      window.print();
+    } else {
+      toast.error('Monthly export limit reached! Upgrade to Pro.');
+    }
+  };
 
   const faqs = [
     {
@@ -68,13 +91,22 @@ export default function SocialRoiCalculator() {
     <div className="max-w-7xl mx-auto px-4 py-12 pb-32">
       {/* Tool Header */}
       <div className="text-center mb-16 px-4">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-6 border border-rose-100"
-        >
-          <Building2 size={12} /> Strategic CFO Framework
-        </motion.div>
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-rose-100"
+          >
+            <Building2 size={12} /> Strategic CFO Framework
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-amber-100"
+          >
+            ⚡ FREEMIUM TOOL
+          </motion.div>
+        </div>
         <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-4 text-balance">
           Social ROI <span className="text-rose-600">(LTV)</span> Calculator
         </h1>
@@ -85,7 +117,7 @@ export default function SocialRoiCalculator() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Input Column */}
-        <div className="lg:col-span-12 xl:col-span-5 space-y-6">
+        <div className="lg:col-span-12 xl:col-span-5 space-y-6 print:hidden">
           <section className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-200 shadow-sm font-sans">
              <div className="flex items-center gap-3 mb-8">
                 <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
@@ -158,9 +190,9 @@ export default function SocialRoiCalculator() {
         </div>
 
         {/* Dashboard Column */}
-        <div className="lg:col-span-12 xl:col-span-7">
-          <section className="bg-slate-950 text-white rounded-[3.5rem] p-4 md:p-6 shadow-2xl overflow-hidden group h-full flex flex-col border border-white/5">
-             <div className="relative flex-1 bg-slate-900/50 rounded-[2.5rem] p-10 md:p-14 border border-white/5 overflow-hidden">
+        <div className="lg:col-span-12 xl:col-span-7 print:w-full print:col-span-12">
+          <section className="bg-slate-950 text-white rounded-[3.5rem] p-4 md:p-6 shadow-2xl overflow-hidden group h-full flex flex-col border border-white/5 print:w-full print:p-0 print:border-none print:bg-slate-950">
+             <div className="relative flex-1 bg-slate-900/50 rounded-[2.5rem] p-10 md:p-14 border border-white/5 overflow-hidden print:w-full print:border-none print:shadow-none print:bg-slate-950">
                 <div className="absolute top-0 right-0 w-96 h-96 bg-rose-500/10 blur-[120px] -mr-32 -mt-32 rounded-full pointer-events-none" />
                 
                 <div className="relative z-10 space-y-12 h-full flex flex-col justify-center">
@@ -180,9 +212,9 @@ export default function SocialRoiCalculator() {
                    </div>
 
                    <div className="pt-12 border-t border-white/5 flex flex-col gap-8">
-                      <div>
+                      <div className="overflow-hidden min-w-0">
                          <p className="text-[10px] font-black text-rose-500 uppercase tracking-[0.4em] mb-4">Total Lifetime Value Created</p>
-                         <p className="text-6xl md:text-8xl font-black tracking-tight text-white drop-shadow-[0_0_20px_rgba(244,63,94,0.1)]">
+                         <p className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight break-words min-w-0 text-white drop-shadow-[0_0_20px_rgba(244,63,94,0.1)]">
                             {stats.totalValue}
                          </p>
                       </div>
@@ -199,7 +231,7 @@ export default function SocialRoiCalculator() {
                       </div>
                    </div>
 
-                   <div className="flex items-center gap-4 flex-wrap">
+                   <div className="flex items-center gap-4 flex-wrap font-sans">
                       <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2">
                          <CheckCircle2 size={12} className="text-emerald-400" />
                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{stats.customers} New Customers</span>
@@ -208,6 +240,21 @@ export default function SocialRoiCalculator() {
                          <Heart size={12} className="text-pink-400" />
                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Retention Optimized</span>
                       </div>
+                      <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl flex items-center gap-2">
+                         <TrendingUp size={12} className={ratioVal >= 3 ? "text-emerald-400" : "text-rose-500"} />
+                         <span className={`text-[10px] font-black uppercase tracking-widest ${ratioVal >= 3 ? "text-emerald-400" : "text-rose-405"}`}>
+                            LTV:CAC Ratio: {ratioRefFormatted}
+                         </span>
+                      </div>
+                   </div>
+
+                   <div className="pt-6 border-t border-white/5 print:hidden">
+                      <button 
+                        onClick={handleExportPDF}
+                        className="w-full py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-xl shadow-rose-600/20 cursor-pointer flex items-center justify-center gap-2"
+                      >
+                         Export ROI Report (PDF) (⚡ {exportCredits} Left)
+                      </button>
                    </div>
                 </div>
              </div>
@@ -215,106 +262,60 @@ export default function SocialRoiCalculator() {
         </div>
       </div>
 
-      {/* SEO Content Section */}
-      <section className="mt-32 space-y-24">
-        {/* Value Prop */}
-        <div className="max-w-4xl mx-auto px-4">
-           <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Defend your social media retainer.</h2>
-           </div>
-           <div className="bg-white border border-slate-200 p-8 md:p-16 rounded-[3.5rem] shadow-sm relative group overflow-hidden font-sans">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                 <Users size={40} className="text-rose-600" />
-              </div>
-              <div className="prose prose-slate max-w-none prose-lg font-medium text-slate-600 leading-relaxed">
-                 <p>
-                    Social media managers often get fired because clients only look at immediate sales, not the Lifetime Value (LTV) of the acquired customers. A single social lead might have a small first purchase, but their long-term brand affinity often leads to years of recurring revenue.
-                 </p>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-10">
-                    <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100">
-                       <h4 className="text-slate-900 font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-                         <Zap size={14} className="text-rose-600" /> Brand Equity
-                       </h4>
-                       <p className="text-sm text-slate-500 leading-normal">
-                         Social leads typically have a higher 2nd-purchase rate due to the brand trust built through content cycles.
-                       </p>
-                    </div>
-                    <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100">
-                       <h4 className="text-slate-900 font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-                         <ShieldCheck size={14} className="text-emerald-600" /> CAC Rationalization
-                       </h4>
-                       <p className="text-sm text-slate-500 leading-normal">
-                         Stop stressing over high acquisition costs if your LTV benchmarks prove the long-term math works.
-                       </p>
-                    </div>
-                 </div>
-                 <p>
-                    By moving the conversation from "How many sales did we get today?" to "How much long-term wealth did we create today?", you position yourself as a strategic CFO-level partner, not just a service provider.
-                 </p>
-              </div>
-           </div>
-        </div>
+      {/* Strictly Isolated SEO Content Section */}
+      <section className="w-full max-w-5xl mx-auto mt-24 pt-12 border-t border-slate-200 prose prose-slate max-w-none print:hidden">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6 font-sans">What is a Social ROI & LTV Calculator?</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8">
+          The Social ROI (Lifetime Value) Calculator is a strategic financial tool designed for marketing agencies, freelancers, and brand owners. It moves beyond front-end vanity metrics (like likes and clicks) to calculate the true, long-term financial impact of a social media marketing campaign.
+        </p>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8 font-sans">
+          By factoring in Customer Lifetime Value (LTV) rather than just the initial purchase value, this tool helps marketers prove the actual profitability of their lead generation efforts and defend their monthly retainers.
+        </p>
 
-        {/* FAQ Accordion */}
-        <div className="max-w-4xl mx-auto px-4">
-           <div className="text-center mb-16 px-4">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">LTV Strategy FAQ</h2>
-              <p className="text-slate-500 font-medium">Critical investment frameworks for social media brand builders.</p>
-           </div>
-           <div className="space-y-4">
-              {faqs.map((faq, idx) => (
-                <div 
-                  key={idx}
-                  className={`bg-white rounded-3xl border border-slate-200 transition-all overflow-hidden ${openFaq === idx ? 'shadow-xl shadow-rose-200/50 border-rose-100' : ''}`}
-                >
-                  <button 
-                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                    className="w-full flex items-center justify-between p-8 text-left"
-                  >
-                    <span className="text-lg md:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                      <HelpCircle size={20} className="text-rose-400" />
-                      {faq.question}
-                    </span>
-                    <ChevronDown className={`text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {openFaq === idx && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                      >
-                        <div className="px-8 pb-8 pl-16">
-                          <p className="text-slate-500 leading-relaxed font-medium">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-           </div>
-        </div>
-      </section>
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6 font-sans">The Problem with Traditional ROI</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-4">
+          Traditional Return on Ad Spend (ROAS) only looks at the immediate revenue generated from an ad click. If you spend $100 to acquire a customer who buys a $50 product, traditional math says you lost money.
+        </p>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8 font-sans">
+          However, if that customer stays loyal for three years and spends $5,000 over their lifetime, that $100 acquisition cost is actually a highly profitable investment. This calculator reveals that hidden profit.
+        </p>
 
-      {/* CTA Footer */}
-      <section className="mt-32 max-w-7xl mx-auto px-4">
-        <div className="bg-rose-600 rounded-[3.5rem] p-12 md:p-24 text-center relative overflow-hidden text-white shadow-2xl">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 blur-3xl -ml-48 -mt-48 rounded-full" />
-          <div className="relative z-10">
-            <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tight text-balance">Defend Your <br/>Market Value.</h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-12 font-medium">
-              Join elite agencies who use LTV math to justify their fees and scale their clients' brand equity.
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6 font-sans">Key Metrics Explained</h2>
+        
+        <div className="space-y-6 mb-8">
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2 font-sans">Total Marketing Cost</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              This is your fully-loaded investment. It combines your raw Monthly Ad Spend paid to networks (like Facebook or LinkedIn) with the Agency Fee or retainer paid to the team managing the campaigns.
             </p>
-            <button 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="px-12 py-6 bg-white text-rose-600 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-2xl shadow-black/20 flex items-center gap-3 mx-auto group"
-            >
-              Analyze Your ROI <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
-            </button>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2 font-sans">CAC (Customer Acquisition Cost)</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              The total marketing cost divided by the actual number of new customers acquired. This represents exactly how much it costs to buy a single paying customer.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2 font-sans">Sales Close Rate</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              Not every lead becomes a customer. By inputting your sales team's close rate, the calculator bridges the gap between marketing (leads generated) and sales (deals closed), ensuring your ROI is based on actual revenue, not just email captures.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2 font-sans">LTV : CAC Ratio</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              This is the golden metric of SaaS and service businesses. It compares the lifetime value of a customer to the cost of acquiring them. A ratio of 3:1 (making three times what you spent to acquire them) is the industry benchmark for a healthy, scalable business model.
+            </p>
           </div>
         </div>
+
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6 font-sans">How Agencies Use This Tool to Defend Retainers</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8 font-sans">
+          Clients often experience "sticker shock" when looking at their monthly marketing bills. When an agency uses this tool to generate a PDF projection report, they shift the conversation from "How much are we spending?" to "Look at the long-term wealth we are creating." It transforms social media marketing from an expense into an undeniable asset.
+        </p>
       </section>
     </div>
   );

@@ -1,16 +1,18 @@
 import React from 'react';
 import { Tool } from '../types';
 import { motion } from 'motion/react';
-import { ArrowRight, Sparkles, FileText, User, Flame } from 'lucide-react';
+import { ArrowRight, Sparkles, FileText, User, Flame, Star } from 'lucide-react';
 
 interface ToolCardProps {
   tool: Tool;
   onClick: () => void;
   trendingRank?: number;
   key?: string | number;
+  isStarred?: boolean;
+  onStarToggle?: (id: string, e: React.MouseEvent) => void;
 }
 
-export default function ToolCard({ tool, onClick, trendingRank }: ToolCardProps) {
+export default function ToolCard({ tool, onClick, trendingRank, isStarred = false, onStarToggle }: ToolCardProps) {
   const isFreemium = tool.tier.toUpperCase() === 'FREEMIUM';
   const isFree = tool.tier.toUpperCase() === 'FREE';
 
@@ -33,8 +35,22 @@ export default function ToolCard({ tool, onClick, trendingRank }: ToolCardProps)
         </div>
       )}
 
+      {/* Star button */}
+      {onStarToggle && (
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            onStarToggle(tool.id, e);
+          }}
+          className="absolute top-5 right-5 z-20 p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-amber-500 cursor-pointer"
+          title={isStarred ? "Unpin tool" : "Pin tool"}
+        >
+          <Star size={16} fill={isStarred ? "currentColor" : "none"} className={isStarred ? "text-amber-500" : "text-slate-400"} />
+        </button>
+      )}
+
       {/* Tier Badge - Absolute top-right */}
-      <div className="absolute top-6 right-6 z-10">
+      <div className={`absolute top-6 ${onStarToggle ? 'right-14' : 'right-6'} z-10`}>
         <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm border flex items-center gap-1.5 ${
           isFreemium ? 'bg-indigo-50 text-indigo-600 border-indigo-200' :
           'bg-emerald-50 text-emerald-600 border-emerald-200'

@@ -4,71 +4,67 @@ import { Check } from 'lucide-react';
 const InvoiceSEO: React.FC = () => {
   return (
     <section className="mt-24 space-y-24 max-w-4xl mx-auto border-t border-slate-200 pt-24 pb-24 px-4 sm:px-0">
-      {/* GST Requirements in Pakistan */}
+      {/* Global GST & VAT Requirements */}
       <div>
-        <h3 className="text-2xl font-black text-slate-900 mb-6">GST Requirements for Businesses in Pakistan</h3>
+        <h3 className="text-2xl font-black text-slate-900 mb-6">Global GST & VAT Requirements for Businesses</h3>
         <p className="text-lg leading-relaxed text-slate-600 mb-6">
-          In Pakistan, the General Sales Tax (GST) is managed by the Federal Board of Revenue (FBR) for goods, while provincial authorities (SRB, PRA, BRA, KRA) manage sales tax on services. Under the Sales Tax Act 1990, any person making taxable supplies in the course of their business is required to register for GST and issue proper tax invoices.
+          In most jurisdictions, General Sales Tax (GST) or Value Added Tax (VAT) is managed by national or regional tax authorities. Any entity making taxable supplies in the course of their business is typically required to register for GST/VAT and issue proper tax invoices.
         </p>
         <p className="text-lg leading-relaxed text-slate-600">
-          Manufacturers with annual turnover above PKR 10 million, importers, and exporters are required to register for GST with the FBR. Service providers register with their respective provincial revenue authority. Refrens online invoice generator supports both goods and services invoice formats for Pakistani businesses.
+          Whether you are a manufacturer, importer, exporter, or service provider crossing a specific annual revenue threshold, compliance is mandatory. Our online invoice generator supports international goods and services invoice formats to keep your business compliant anywhere in the world.
         </p>
       </div>
 
       {/* What is a Tax Invoice */}
       <div>
-        <h3 className="text-2xl font-black text-slate-900 mb-4">What is a Tax Invoice in Pakistan? — Invoice Generator Guide</h3>
+        <h3 className="text-2xl font-black text-slate-900 mb-4">What is a Tax Invoice? — Invoice Generator Guide</h3>
         <p className="text-lg leading-relaxed text-slate-600">
-          A sales tax invoice in Pakistan is the official billing document for FBR-registered businesses supplying taxable goods or services. It is the document your business client uses to claim input tax adjustments on their GST return — reducing the net GST they owe to the FBR. Issuing an incomplete or non-compliant invoice can trigger FBR penalties and block your client's input tax claim, damaging business relationships.
+          A tax invoice is the official billing document for registered businesses supplying taxable goods or services. It is the vital document your clients use to claim input tax adjustments or credits on their tax returns—reducing the net tax they owe to their local authority. Issuing an incomplete or non-compliant invoice can trigger penalties and block your client's tax claims, damaging critical business relationships.
         </p>
       </div>
 
-      {/* Valid Pakistan Sales Tax Invoice Must Include */}
+      {/* Valid Tax Invoice Must Include */}
       <div>
-        <h3 className="text-2xl font-black text-slate-900 mb-6">What a Valid Pakistan Sales Tax Invoice Must Include</h3>
+        <h3 className="text-2xl font-black text-slate-900 mb-6">What a Valid Tax Invoice Must Include</h3>
         <p className="text-lg leading-relaxed text-slate-600 mb-8">
-          Refrens online invoice generator ensures every invoice you create meets FBR requirements:
+          Our online invoice generator ensures every invoice you create meets standard international tax compliance requirements:
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
              <span className="block font-black text-slate-900 mb-2">"Tax Invoice"</span>
-             <p className="text-slate-600">Clearly labelled at the top</p>
+             <p className="text-slate-600">Clearly labelled at the top of the document</p>
            </div>
            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
              <span className="block font-black text-slate-900 mb-2">Supplier Details</span>
-             <p className="text-slate-600">Supplier's name, address, NTN, and STRN — your FBR-registered details</p>
+             <p className="text-slate-600">Supplier's official business name, address, and VAT/GST registration number</p>
            </div>
            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
              <span className="block font-black text-slate-900 mb-2">Sequential Data</span>
-             <p className="text-slate-600">Invoice date and sequential invoice number</p>
+             <p className="text-slate-600">Invoice issue date and a unique, sequential invoice number</p>
            </div>
            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
              <span className="block font-black text-slate-900 mb-2">Buyer Information</span>
-             <p className="text-slate-600">Buyer's name, address, and NTN/STRN — for input tax adjustment claims</p>
+             <p className="text-slate-600">Buyer's official name, billing address, and VAT/GST registration number (if applicable)</p>
            </div>
            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
              <span className="block font-black text-slate-900 mb-2">Goods/Services</span>
-             <p className="text-slate-600">Description of goods or services — with HS code for goods</p>
+             <p className="text-slate-600">Detailed description of the goods or services supplied to the client</p>
            </div>
            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
              <span className="block font-black text-slate-900 mb-2">Line Items</span>
-             <p className="text-slate-600">Quantity, unit price, and value excluding GST — per line item</p>
+             <p className="text-slate-600">Quantity, unit price, and subtotal value excluding taxes per item</p>
            </div>
            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-             <span className="block font-black text-slate-900 mb-2">GST Details</span>
-             <p className="text-slate-600">GST rate (18% or applicable rate) and GST amount — clearly separated</p>
-           </div>
-           <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-             <span className="block font-black text-slate-900 mb-2">Total Amount</span>
-             <p className="text-slate-600">Total amount payable — in Pakistani Rupee (PKR)</p>
+             <span className="block font-black text-slate-900 mb-2">GST / VAT Details</span>
+             <p className="text-slate-600">Applicable tax rate and the exact tax amount clearly itemised and separated</p>
            </div>
            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 md:col-span-2">
-             <span className="block font-black text-slate-900 mb-2">FBR Reference</span>
-             <p className="text-slate-600">FBR invoice reference number — for businesses on the PRAL e-invoicing system</p>
+             <span className="block font-black text-slate-900 mb-2">Total Amount Payable</span>
+             <p className="text-slate-600">Gross total amount payable, expressed in the selected transaction currency</p>
            </div>
         </div>
         <p className="mt-8 text-lg leading-relaxed text-slate-600">
-          Use Refrens free invoice generator to draft and organise invoice details before submitting through PRAL — keeping your FBR records accurate and reducing the risk of audit discrepancies.
+          Use our free invoice generator to draft and organize invoice details easily — keeping your business records accurate and reducing the risk of audit or compliance discrepancies.
         </p>
       </div>
 

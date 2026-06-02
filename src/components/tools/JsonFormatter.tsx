@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Code, 
@@ -13,35 +13,118 @@ import {
   AlertCircle,
   HelpCircle,
   Cpu,
-  FileJson
+  FileJson,
+  Upload
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function JsonFormatter() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isCopying, setIsCopying] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [spacing, setSpacing] = useState<string>('2');
+  const [isValidJson, setIsValidJson] = useState<boolean | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const processJson = (mode: 'beautify' | 'minify') => {
-    if (!input.trim()) {
+  const triggerFormat = (jsonInput: string, currentSpacing: string) => {
+    if (!jsonInput.trim()) {
       setOutput('');
       setError(null);
+      setIsValidJson(null);
       return;
     }
 
     try {
-      const parsed = JSON.parse(input);
-      if (mode === 'beautify') {
-        setOutput(JSON.stringify(parsed, null, 2));
-      } else {
-        setOutput(JSON.stringify(parsed));
-      }
+      const parsed = JSON.parse(jsonInput);
+      setIsValidJson(true);
       setError(null);
+      if (currentSpacing === 'minify') {
+        setOutput(JSON.stringify(parsed));
+      } else {
+        const spaceVal = parseInt(currentSpacing, 10) || 2;
+        setOutput(JSON.stringify(parsed, null, spaceVal));
+      }
     } catch (err: any) {
-      setError(err.message || 'Invalid JSON format');
-      setOutput('');
+      setIsValidJson(false);
+      const errMsg = err.message || 'Invalid JSON format';
+      setError(errMsg);
+      setOutput(errMsg);
     }
+  };
+
+  const handleBeautify = () => {
+    let nextSpacing = spacing;
+    if (spacing === 'minify') {
+      nextSpacing = '2';
+      setSpacing('2');
+    }
+    triggerFormat(input, nextSpacing);
+  };
+
+  const handleMinify = () => {
+    setSpacing('minify');
+    triggerFormat(input, 'minify');
+  };
+
+  const handleLoadExample = () => {
+    const example = JSON.stringify({
+      appName: "FlowState Studio",
+      version: "1.4.2",
+      active: true,
+      stats: {
+        totalUsers: 12850,
+        weeklyRetention: 82.5,
+        uptimePercent: 99.98
+      },
+      supportedFeatures: [
+        "JSON Formatting & Validation",
+        "Diff Inspection Engine",
+        "WCAG Contrast Auditor",
+        "Custom Presets"
+      ],
+      preferences: {
+        theme: "Developer Dark",
+        autoSave: true,
+        editor: {
+          tabSize: 2,
+          fontSize: 14,
+          wrapLines: false
+        }
+      },
+      metadata: [
+        {
+          id: "item-001",
+          tags: ["prod", "utility"]
+        },
+        {
+          id: "item-002",
+          tags: ["beta", "test"]
+        }
+      ]
+    }, null, 2);
+    
+    setInput(example);
+    triggerFormat(example, spacing === 'minify' ? '2' : spacing);
+    if (spacing === 'minify') {
+      setSpacing('2');
+    }
+    toast.success('Example JSON loaded successfully!');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      setInput(text);
+      triggerFormat(text, spacing);
+      toast.success('File loaded successfully');
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleCopy = () => {
@@ -55,22 +138,8 @@ export default function JsonFormatter() {
     setInput('');
     setOutput('');
     setError(null);
+    setIsValidJson(null);
   };
-
-  const faqs = [
-    {
-      question: "What makes JSON invalid?",
-      answer: "Common errors include trailing commas after the last item in an object or array, using single quotes instead of double quotes for strings/keys, unquoted keys, or mismatched brackets/braces."
-    },
-    {
-      question: "Why should I minify JSON?",
-      answer: "Minifying removes all unnecessary whitespace and line breaks, significantly reducing the file size. This is crucial for production APIs where smaller payloads lead to lower bandwidth costs and faster parsing times for client applications."
-    },
-    {
-      question: "Can I format large JSON files?",
-      answer: "Yes. Since this tool processes everything locally using your browser's JavaScript engine and your machine's memory, it can handle massive datasets (several megabytes) instantly without the latency associated with server-side processing."
-    }
-  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 pb-32">
@@ -117,30 +186,57 @@ export default function JsonFormatter() {
           <div className="flex flex-col space-y-4">
             <div className="flex items-center justify-between px-1">
                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Input Raw JSON</label>
-               <button 
-                 onClick={clearAll}
-                 className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1.5"
-               >
-                 <Trash2 size={12} /> Clear
-               </button>
+               <div className="flex items-center gap-2.5">
+                 <button 
+                   onClick={handleLoadExample}
+                   className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-amber-600 transition-colors bg-transparent border-none cursor-pointer outline-none"
+                 >
+                   Load Example
+                 </button>
+                 <span className="text-slate-300 text-xs">|</span>
+                 <button 
+                   onClick={() => fileInputRef.current?.click()}
+                   className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-amber-600 transition-colors flex items-center gap-1 bg-transparent border-none cursor-pointer outline-none"
+                 >
+                   <Upload size={10} /> Upload File
+                 </button>
+                 <span className="text-slate-300 text-xs">|</span>
+                 <button 
+                   onClick={clearAll}
+                   className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1 bg-transparent border-none cursor-pointer outline-none"
+                 >
+                   <Trash2 size={11} /> Clear
+                 </button>
+                 <input 
+                   type="file" 
+                   ref={fileInputRef} 
+                   onChange={handleFileUpload} 
+                   accept=".json" 
+                   className="hidden" 
+                 />
+               </div>
             </div>
             <div className="relative flex-1 group">
               <textarea 
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setInput(val);
+                  triggerFormat(val, spacing);
+                }}
                 placeholder='Paste your JSON here (e.g. {"name": "FlowState"})'
                 className="w-full h-[500px] p-8 bg-white border border-slate-200 rounded-[2.5rem] focus:outline-none focus:border-amber-500 font-mono text-sm leading-relaxed shadow-sm transition-all resize-none group-hover:border-slate-300"
               />
             </div>
             <div className="flex flex-wrap gap-3">
               <button 
-                onClick={() => processJson('beautify')}
+                onClick={handleBeautify}
                 className="flex-1 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2"
               >
                 <AlignLeft size={16} /> Beautify JSON
               </button>
               <button 
-                onClick={() => processJson('minify')}
+                onClick={handleMinify}
                 className="flex-1 px-8 py-4 bg-white border border-slate-200 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
               >
                 <Maximize2 size={16} /> Minify JSON
@@ -150,8 +246,38 @@ export default function JsonFormatter() {
 
           {/* Output Side */}
           <div className="flex flex-col space-y-4">
-            <div className="flex items-center justify-between px-1">
-               <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Formatted Output</label>
+            <div className="flex items-center justify-between px-1 h-6">
+               <div className="flex items-center gap-3">
+                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Formatted Output</label>
+                 {isValidJson !== null && (
+                   <span className={`text-[9.5px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border ${
+                     isValidJson 
+                     ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
+                     : 'bg-rose-50 text-rose-600 border-rose-100'
+                   }`}>
+                     {isValidJson ? 'Valid JSON' : 'Invalid JSON'}
+                   </span>
+                 )}
+               </div>
+
+               {/* Spacing Controls Dropdown */}
+               <div className="flex items-center gap-2">
+                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Spacing:</span>
+                 <select 
+                   value={spacing}
+                   onChange={(e) => {
+                     const val = e.target.value;
+                     setSpacing(val);
+                     triggerFormat(input, val);
+                   }}
+                   className="text-[10px] font-black bg-white border border-slate-200 text-slate-750 rounded-lg px-2 py-1 outline-none focus:border-amber-500 cursor-pointer"
+                 >
+                   <option value="2">2 Spaces</option>
+                   <option value="3">3 Spaces</option>
+                   <option value="4">4 Spaces</option>
+                   <option value="minify">Minified (Compact)</option>
+                 </select>
+               </div>
             </div>
             <div className="relative flex-1">
               <div className="absolute top-4 right-4 z-10">
@@ -170,7 +296,7 @@ export default function JsonFormatter() {
               </div>
               <div className="w-full h-[500px] bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-2xl overflow-auto group">
                 {output ? (
-                  <pre className="p-8 font-mono text-sm leading-relaxed text-amber-400">
+                  <pre className={`p-8 font-mono text-sm leading-relaxed ${isValidJson === false ? 'text-rose-500' : 'text-amber-400'}`}>
                     <code>{output}</code>
                   </pre>
                 ) : (
@@ -186,137 +312,43 @@ export default function JsonFormatter() {
         </div>
       </div>
 
-      {/* SEO Content Section */}
-      <section className="mt-32 space-y-24">
-        {/* Privacy First Banner */}
-        <div className="max-w-7xl mx-auto px-4">
-           <div className="bg-emerald-50 rounded-[3rem] p-10 md:p-16 border border-emerald-100 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-                 <ShieldCheck size={120} className="text-emerald-600" />
-              </div>
-              <div className="relative z-10 max-w-3xl">
-                 <div className="flex items-center gap-3 mb-6">
-                    <div className="p-2 bg-emerald-600 text-white rounded-xl">
-                      <ShieldCheck size={24} />
-                    </div>
-                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">100% Secure & Local Processing</h2>
-                 </div>
-                 <p className="text-xl text-emerald-900/70 font-medium leading-relaxed">
-                    Unlike other formatters, this tool processes your JSON entirely within your browser. 
-                    Your sensitive API payloads, tokens, and data never leave your device and are never sent to our servers. 
-                    We can't see your data, and we don't want to.
-                 </p>
-              </div>
-           </div>
-        </div>
+      {/* Strictly Isolated SEO Content Section */}
+      <section className="w-full max-w-5xl mx-auto mt-24 pt-12 border-t border-slate-200 prose prose-slate max-w-none print:hidden">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">What is a JSON Formatter & Validator?</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8">
+          A JSON Formatter & Validator is a tool used to organize and check JSON (JavaScript Object Notation) data. It makes messy data easy for humans to read and ensures the code is structurally correct before being used in software applications.
+        </p>
 
-        {/* Core Features Grid */}
-        <div className="max-w-7xl mx-auto px-4">
-           <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">The Complete Payload Engine</h2>
-              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Essential tools for data engineering.</p>
-           </div>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              <motion.div 
-                whileHover={{ y: -5 }}
-                className="bg-white p-10 rounded-[3rem] border border-slate-200 hover:shadow-2xl transition-all"
-              >
-                 <div className="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                    <AlignLeft size={32} />
-                 </div>
-                 <h3 className="text-2xl font-black text-slate-900 mb-4">Format & Beautify</h3>
-                 <p className="text-slate-500 font-medium leading-relaxed">
-                    Convert unreadable, single-line JSON strings into perfectly indented, human-readable data structures with standard 2-space indentation.
-                 </p>
-              </motion.div>
-              <motion.div 
-                whileHover={{ y: -5 }}
-                className="bg-white p-10 rounded-[3rem] border border-slate-200 hover:shadow-2xl transition-all"
-              >
-                 <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                    <AlertCircle size={32} />
-                 </div>
-                 <h3 className="text-2xl font-black text-slate-900 mb-4">Validate & Debug</h3>
-                 <p className="text-slate-500 font-medium leading-relaxed">
-                    Instantly catch syntax errors, missing quotation marks, or illegal trailing commas with precise, browser-native error reporting.
-                 </p>
-              </motion.div>
-              <motion.div 
-                whileHover={{ y: -5 }}
-                className="bg-white p-10 rounded-[3rem] border border-slate-200 hover:shadow-2xl transition-all"
-              >
-                 <div className="w-16 h-16 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-                    <Maximize2 size={32} />
-                 </div>
-                 <h3 className="text-2xl font-black text-slate-900 mb-4">Minify & Compress</h3>
-                 <p className="text-slate-500 font-medium leading-relaxed">
-                    Strip all whitespace and line breaks from your JSON to reduce payload size before sending it to production or via webhook.
-                 </p>
-              </motion.div>
-           </div>
-        </div>
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">Why Use These Tools?</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-6">
+          Developers frequently use JSON to transfer data between servers and apps. However, this data is often exported as a single, dense line without spaces to save storage space (called minifying). A Formatter & Validator tackles this through two main functions:
+        </p>
 
-        {/* FAQ Accordion */}
-        <div className="max-w-4xl mx-auto px-4">
-           <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">JSON Syntax Guide</h2>
-              <p className="text-slate-500 font-medium">Mastering the standard of web data exchange.</p>
-           </div>
-           <div className="space-y-4">
-              {faqs.map((faq, idx) => (
-                <div 
-                  key={idx}
-                  className={`bg-white rounded-3xl border border-slate-200 transition-all overflow-hidden ${openFaq === idx ? 'shadow-xl shadow-amber-200/50 border-amber-100' : ''}`}
-                >
-                  <button 
-                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                    className="w-full flex items-center justify-between p-8 text-left"
-                  >
-                    <span className="text-lg md:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                      <HelpCircle size={20} className="text-amber-400" />
-                      {faq.question}
-                    </span>
-                    <ChevronDown className={`text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {openFaq === idx && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                      >
-                        <div className="px-8 pb-8 pl-16">
-                          <p className="text-slate-500 leading-relaxed font-medium">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-           </div>
-        </div>
-      </section>
-
-      {/* CTA Footer */}
-      <section className="mt-32 max-w-7xl mx-auto">
-        <div className="bg-[#0f4c75] rounded-[4rem] p-12 md:p-24 text-center relative overflow-hidden text-white shadow-2xl">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 blur-3xl -ml-48 -mt-48 rounded-full" />
-          <div className="relative z-10">
-            <Cpu size={48} className="text-amber-400 mx-auto mb-8" />
-            <h2 className="text-4xl md:text-6xl font-black mb-8 tracking-tight">Process Data Faster <br/>With FlowState</h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-12 font-medium">
-              Join thousands of engineers who trust our browser-native toolset for their daily data processing tasks.
+        <div className="space-y-6 mb-8">
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">1. Formatting (Beautifying)</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              It takes compacted, hard-to-read JSON and restructures it with proper indentation, line breaks, and color-coding. This provides a clean, visual hierarchy making it easier to debug and understand.
             </p>
-            <button 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="px-12 py-6 bg-white text-[#0f4c75] rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-2xl shadow-black/20"
-            >
-              Back to Formatter
-            </button>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">2. Validating</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              It checks the JSON code for syntax errors. It ensures that all brackets, quotes, and commas are properly placed according to JSON standards. If there is an error, the tool will instantly flag it, usually indicating the exact line number so you can fix it.
+            </p>
           </div>
         </div>
+
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">Common Features</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-4">
+          Most JSON Formatter & Validator tools include the following features:
+        </p>
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 font-medium mb-8">
+          <li><strong>Error Highlighting:</strong> Pinpoints missing colons, unclosed strings, or trailing commas.</li>
+          <li><strong>Tree View:</strong> Collapsible folders and arrays to easily navigate complex data structures.</li>
+          <li><strong>Minification:</strong> Compresses the JSON back down into a single line to save space before deployment.</li>
+        </ul>
       </section>
     </div>
   );

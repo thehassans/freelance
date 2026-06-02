@@ -387,9 +387,9 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
     { id: 'col_2', name: 'VAT Rate', type: 'NUMBER', visible: true, locked: false },
     { id: 'col_3', name: 'Quantity', type: 'NUMBER', visible: true, locked: false },
     { id: 'col_4', name: 'Rate', type: 'CURRENCY', visible: true, locked: false },
-    { id: 'col_5', name: 'Amount', type: 'FORMULA', formula: 'Quantity * Rate', visible: true, locked: true },
-    { id: 'col_6', name: 'VAT', type: 'FORMULA', formula: 'Amount * (VAT Rate / 100)', visible: true, locked: true },
-    { id: 'col_7', name: 'Total', type: 'FORMULA', formula: 'Amount + VAT', visible: true, locked: true }
+    { id: 'col_5', name: 'Amount', type: 'FORMULA', formula: 'Quantity * Rate', visible: false, locked: true },
+    { id: 'col_6', name: 'VAT', type: 'FORMULA', formula: 'Amount * (VAT Rate / 100)', visible: false, locked: true },
+    { id: 'col_7', name: 'Total', type: 'FORMULA', formula: 'Amount + VAT', visible: false, locked: true }
   ]);
   const [draftColumns, setDraftColumns] = useState<any[]>([...columns]);
 
@@ -670,13 +670,13 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
 
   const displayedHistory = history.length > 0 ? history : mockRecentInvoices;
 
-  const clearForm = () => {
+  const handleClear = () => {
     if (window.confirm('Are you sure you want to clear all data? This cannot be undone.')) {
       setInvoiceData({
         invoiceNumber: '1',
         date: new Date().toISOString().split('T')[0],
         dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        paymentTerms: 'Net 14',
+        paymentTerms: 'Immediate',
         poNumber: '',
         fromBusiness: '',
         fromEmail: '',
@@ -706,8 +706,10 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
         paymentInstructions: '',
         paymentUrl: ''
       });
-      setItems([]);
+      setItems([{ id: '1', description: '', quantity: 1, rate: 0 }]);
       setLogo(null);
+      setSenderCustomFields([]);
+      setClientCustomFields([]);
       localStorage.removeItem('invoice_draft');
     }
   };
@@ -785,7 +787,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
   const colors = ['#0f4c75', '#1b998b', '#6c63ff', '#1a1a2e', '#ff6b6b', '#f59e0b', '#10b981'];
 
   return (
-    <div className="max-w-4xl mx-auto w-full items-start relative px-4 sm:px-6 lg:px-8 pb-20">
+    <div className="w-full max-w-6xl mx-auto px-4 py-8">
       <AnimatePresence mode="wait">
         {viewMode === 'edit' ? (
           <motion.div
@@ -828,7 +830,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
                 <History size={14} /> {showHistory ? 'Back' : 'History'}
               </button>
               <button 
-                onClick={clearForm}
+                onClick={handleClear}
                 className="px-3 py-1.5 bg-slate-50 text-danger/70 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-danger/10 hover:text-danger transition-all border border-slate-200"
                 title="Clear all fields"
               >
@@ -1167,7 +1169,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Invoice #</label>
                       <input 
@@ -1586,6 +1588,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
           onExportStart={exportToPDF}
           primaryColor={primaryColor}
           toolId="invoice-generator"
+          containerClassName="w-full max-w-[1120px] mx-auto"
           extraActions={
             <button 
               onClick={() => setViewMode('edit')}
@@ -1597,7 +1600,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
         >
           <div 
             ref={invoiceRef}
-            className="flex flex-col w-full bg-white shadow-lg print:shadow-none print:w-full print:p-0 transition-all rounded-md overflow-hidden mx-auto"
+            className="w-full max-w-[1120px] mx-auto bg-white p-4 sm:p-8 md:p-12 shadow-2xl ring-1 ring-slate-200 sm:rounded-lg mb-20"
             style={{ 
               minHeight: '1056px',
             }}
@@ -1643,7 +1646,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
                 >
                   <option value="NONE">NONE</option>
                   <option value="VAT">VAT</option>
-                  <option value="GST">GST (India)</option>
+                  <option value="GST">GST</option>
                   <option value="Sales Tax">Sales Tax</option>
                   <option value="PPN">PPN</option>
                   <option value="TVA">TVA</option>

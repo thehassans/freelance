@@ -15,6 +15,7 @@ interface UniversalDocumentPreviewProps {
   hideControls?: boolean;
   extraActions?: React.ReactNode;
   toolId?: string;
+  containerClassName?: string;
 }
 
 export default function UniversalDocumentPreview({ 
@@ -26,64 +27,13 @@ export default function UniversalDocumentPreview({
   primaryColor = "#0f4c75",
   hideControls = false,
   extraActions,
-  toolId
+  toolId,
+  containerClassName
 }: UniversalDocumentPreviewProps) {
   const { isPro } = useUser();
   const { handleProtectedExport } = useProtectedExport();
   const containerRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [manualScale, setManualScale] = useState<number | null>(null);
-
-  useEffect(() => {
-    const updateScale = () => {
-      if (!containerRef.current || manualScale !== null) return;
-      const containerWidth = containerRef.current.clientWidth;
-      const targetWidth = 800; // Desired A4 pixel width approx
-      if (containerWidth > 0 && containerWidth < targetWidth + 40) {
-        // Use a small buffer and ensure we don't scale to zero
-        const newScale = Math.max(0.2, (containerWidth - 40) / targetWidth);
-        setScale(newScale);
-      } else {
-        setScale(1);
-      }
-    };
-
-    // Use ResizeObserver for better reactivity to layout changes
-    const observer = new ResizeObserver(() => {
-      updateScale();
-    });
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    // Initial calculation
-    updateScale();
-    
-    // Safety timeout for initial render/animation settling
-    const timer = setTimeout(updateScale, 300);
-
-    return () => {
-      observer.disconnect();
-      clearTimeout(timer);
-    };
-  }, [manualScale]);
-
-  const toggleZoom = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (manualScale === null) {
-      setManualScale(1.2);
-      setScale(1.2);
-    } else if (manualScale === 1.2) {
-      setManualScale(1.5);
-      setScale(1.5);
-    } else {
-      setManualScale(null);
-    }
-  };
 
   const handleExportPDF = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -138,17 +88,6 @@ export default function UniversalDocumentPreview({
           </div>
           <div className="flex items-center gap-2">
             {extraActions && extraActions}
-            <button 
-              type="button"
-              onClick={toggleZoom}
-              className={`p-2.5 rounded-xl transition-all flex items-center gap-2 border cursor-pointer active:scale-95 ${manualScale !== null ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}
-              title="Toggle Zoom Level"
-            >
-              <div className="flex flex-col items-center leading-none">
-                <span className="text-[10px] font-black uppercase tracking-[0.1em]">Zoom</span>
-                <span className="text-[8px] font-bold opacity-60 underline decoration-primary/30 underline-offset-2">{manualScale === null ? 'Auto' : `${Math.round(manualScale * 100)}%`}</span>
-              </div>
-            </button>
             {!hideControls && (
               <>
                 {!isPro && (
@@ -183,59 +122,56 @@ export default function UniversalDocumentPreview({
         ref={containerRef}
         className="flex-grow bg-slate-100 rounded-[2.5rem] p-2 sm:p-4 md:p-6 overflow-auto flex justify-center items-start border border-slate-200/50 inner-shadow min-h-[800px] scroll-smooth"
       >
-        <div className="relative group p-4 sm:p-8">
-          <motion.div 
-            initial={false}
-            animate={{ scale }}
-            style={{ originY: 0, originX: 0.5 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        <div 
+          className={`relative group p-2 sm:p-4 w-full ${containerClassName || 'max-w-4xl'} mx-auto`}
+        >
+          <div 
+            ref={paperRef}
+            className={`w-full ${containerClassName || 'max-w-4xl'} mx-auto bg-white shadow-2xl relative overflow-hidden flex flex-col print:shadow-none transition-shadow duration-500 group-hover:shadow-3xl`}
+            style={{ 
+              padding: '24px 16px',
+            }}
           >
-            <div 
-              ref={paperRef}
-              className="w-[800px] min-h-[1131px] bg-white shadow-2xl relative overflow-hidden flex flex-col print:shadow-none transition-shadow duration-500 group-hover:shadow-3xl"
-              style={{ padding: '60px 80px' }}
-            >
-              {isLoading ? (
-                <div className="flex flex-col gap-8 opacity-40 animate-pulse">
-                  <div className="flex justify-between items-start">
-                    <div className="w-48 h-12 bg-slate-100 rounded-lg" />
-                    <div className="w-32 h-32 bg-slate-50 rounded-2xl" />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="w-full h-8 bg-slate-100 rounded-lg" />
-                    <div className="w-3/4 h-8 bg-slate-100 rounded-lg" />
-                  </div>
-                  <div className="space-y-6 mt-12">
-                    {[...Array(6)].map((_, i) => (
-                      <div key={i} className="w-full h-4 bg-slate-50 rounded-full" />
-                    ))}
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[1px]">
-                     <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                        <span className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">Crafting Document...</span>
-                     </div>
-                  </div>
+            {isLoading ? (
+              <div className="flex flex-col gap-8 opacity-40 animate-pulse">
+                <div className="flex justify-between items-start">
+                  <div className="w-48 h-12 bg-slate-100 rounded-lg" />
+                  <div className="w-32 h-32 bg-slate-50 rounded-2xl" />
                 </div>
-              ) : (
-                <>
-                  <div className="flex-grow">
-                    {children}
-                  </div>
-                  
-                  {!isPro && (
-                    <div className="mt-auto pt-12 text-center">
-                      <div className="py-4 border-t border-slate-100">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
-                          Generated safely by <span className="text-primary/40">FreelancerKit.io</span>
-                        </p>
-                      </div>
+                <div className="space-y-4">
+                  <div className="w-full h-8 bg-slate-100 rounded-lg" />
+                  <div className="w-3/4 h-8 bg-slate-100 rounded-lg" />
+                </div>
+                <div className="space-y-6 mt-12">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="w-full h-4 bg-slate-50 rounded-full" />
+                  ))}
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[1px]">
+                   <div className="flex flex-col items-center gap-4">
+                      <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                      <span className="text-sm font-black text-slate-900 uppercase tracking-[0.2em]">Crafting Document...</span>
+                   </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex-grow">
+                  {children}
+                </div>
+                
+                {!isPro && (
+                  <div className="mt-auto pt-12 text-center">
+                    <div className="py-4 border-t border-slate-100">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
+                        Generated safely by <span className="text-primary/40">FreelancerKit.io</span>
+                      </p>
                     </div>
-                  )}
-                </>
-              )}
-            </div>
-          </motion.div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

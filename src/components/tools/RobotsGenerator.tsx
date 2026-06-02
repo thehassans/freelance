@@ -15,8 +15,10 @@ import {
   Globe,
   Settings2,
   Code,
-  ArrowRight
+  ArrowRight,
+  Bot
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Directive {
   id: string;
@@ -31,19 +33,44 @@ export default function RobotsGenerator() {
     { id: '2', type: 'Allow', path: '/wp-admin/admin-ajax.php' }
   ]);
   const [sitemapUrl, setSitemapUrl] = useState('');
+  const [crawlDelay, setCrawlDelay] = useState<string>('');
+  const [blockAi, setBlockAi] = useState(false);
+  const [preset, setPreset] = useState<string>('wordpress');
   const [copied, setCopied] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const addDirective = () => {
-    setDirectives([...directives, { id: Math.random().toString(), type: 'Disallow', path: '/' }]);
+    setDirectives(prev => [...prev, { id: Math.random().toString(), type: 'Disallow', path: '/' }]);
+    setPreset('custom');
   };
 
   const removeDirective = (id: string) => {
-    setDirectives(directives.filter(d => d.id !== id));
+    setDirectives(prev => prev.filter(d => d.id !== id));
+    setPreset('custom');
   };
 
   const updateDirective = (id: string, field: keyof Directive, value: string) => {
-    setDirectives(directives.map(d => d.id === id ? { ...d, [field]: value } : d));
+    setDirectives(prev => prev.map(d => d.id === id ? { ...d, [field]: value } : d));
+    setPreset('custom');
+  };
+
+  const handlePresetChange = (selectedPreset: string) => {
+    setPreset(selectedPreset);
+    if (selectedPreset === 'wordpress') {
+      setDirectives([
+        { id: '1', type: 'Disallow', path: '/wp-admin/' },
+        { id: '2', type: 'Allow', path: '/wp-admin/admin-ajax.php' }
+      ]);
+      toast.success('WordPress rules loaded successfully!');
+    } else if (selectedPreset === 'shopify') {
+      setDirectives([
+        { id: '1', type: 'Disallow', path: '/checkout/' },
+        { id: '2', type: 'Disallow', path: '/cart/' },
+        { id: '3', type: 'Disallow', path: '/orders/' }
+      ]);
+      toast.success('Shopify rules loaded successfully!');
+    } else {
+      toast.info('Custom presets selected. Feel free to modify crawler rules.');
+    }
   };
 
   const generatedText = useMemo(() => {
@@ -51,15 +78,26 @@ export default function RobotsGenerator() {
     directives.forEach(d => {
       text += `${d.type}: ${d.path}\n`;
     });
-    if (sitemapUrl) {
-      text += `\nSitemap: ${sitemapUrl}`;
+    if (crawlDelay && crawlDelay.trim()) {
+      text += `Crawl-delay: ${crawlDelay.trim()}\n`;
+    }
+    
+    if (blockAi) {
+      text += `\nUser-agent: GPTBot\nDisallow: /\n`;
+      text += `\nUser-agent: CCBot\nDisallow: /\n`;
+      text += `\nUser-agent: Anthropic-ai\nDisallow: /\n`;
+    }
+
+    if (sitemapUrl && sitemapUrl.trim()) {
+      text += `\nSitemap: ${sitemapUrl.trim()}\n`;
     }
     return text;
-  }, [userAgent, directives, sitemapUrl]);
+  }, [userAgent, directives, sitemapUrl, crawlDelay, blockAi]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedText);
     setCopied(true);
+    toast.success('Robots.txt content copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -70,22 +108,9 @@ export default function RobotsGenerator() {
     element.download = "robots.txt";
     document.body.appendChild(element);
     element.click();
+    document.body.removeChild(element);
+    toast.success('Robots.txt downloaded successfully');
   };
-
-  const faqs = [
-    {
-      question: "What is a User-Agent?",
-      answer: "A User-Agent is the identity of a web crawler. Using '*' target all crawlers (Googlebot, Bingbot, etc.). You can also specify certain bots, like 'Googlebot-Image' to set specific rules for image search only."
-    },
-    {
-      question: "Should I block my /wp-admin/ folder?",
-      answer: "Yes, it is standard practice to block your administrative backend to prevent search engines from wasting crawl budget on private pages. However, ensure you 'Allow' admin-ajax.php if your theme requires it for frontend functionality."
-    },
-    {
-      question: "Will robots.txt prevent indexing?",
-      answer: "Not necessarily. It prevents 'crawling'. If a page is already indexed and you block it in robots.txt, Google might still show it in search results. To fully prevent indexing, use the 'noindex' meta tag instead."
-    }
-  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 pb-32">
@@ -94,15 +119,15 @@ export default function RobotsGenerator() {
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-6 border border-slate-200"
+          className="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 text-[10px] font-black uppercase tracking-widest rounded-full mb-6 border border-amber-100"
         >
           <ShieldCheck size={12} /> Technical SEO Framework
         </motion.div>
         <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight mb-4 text-balance">
-          Advanced <span className="text-slate-600">Robots.txt</span> Generator
+          Advanced <span className="text-amber-600">Robots.txt</span> Generator
         </h1>
         <p className="text-slate-500 max-w-2xl mx-auto font-medium text-lg leading-relaxed font-sans">
-          Prevent catastrophic SEO mistakes. Generate validated, error-free robots.txt files designed for modern search engine crawlers.
+          Prevent catastrophic SEO mistakes. Generate validated, error-free robots.txt files designed for modern search engine crawlers and e-commerce setups.
         </p>
       </div>
 
@@ -117,16 +142,33 @@ export default function RobotsGenerator() {
               <h3 className="text-xl font-black uppercase tracking-tight text-slate-800">Directives</h3>
             </div>
 
-            <div className="space-y-8 flex-1">
+            <div className="space-y-6 flex-1">
+              {/* CMS Preset */}
+              <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-1">Load Preset</label>
+                 <select 
+                   value={preset} 
+                   onChange={(e) => handlePresetChange(e.target.value)}
+                   className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-all text-sm cursor-pointer"
+                 >
+                   <option value="custom">Custom (Default)</option>
+                   <option value="wordpress">WordPress</option>
+                   <option value="shopify">Shopify</option>
+                 </select>
+              </div>
+
               {/* User Agent */}
               <div className="space-y-2">
                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-1">User Agent</label>
                  <input 
                    type="text" 
                    value={userAgent} 
-                   onChange={(e) => setUserAgent(e.target.value)}
+                   onChange={(e) => {
+                     setUserAgent(e.target.value);
+                     setPreset('custom');
+                   }}
                    placeholder="*"
-                   className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-all"
+                   className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-all text-sm"
                  />
                  <p className="text-[10px] text-slate-400 mt-2 px-1 italic">Use '*' to apply these rules to all search engine bots.</p>
               </div>
@@ -139,8 +181,8 @@ export default function RobotsGenerator() {
                       <div key={directive.id} className="flex gap-2">
                         <select 
                           value={directive.type}
-                          onChange={(e) => updateDirective(directive.id, 'type', e.target.value)}
-                          className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none text-sm appearance-none cursor-pointer"
+                          onChange={(e) => updateDirective(directive.id, 'type', e.target.value as any)}
+                          className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none text-sm cursor-pointer"
                         >
                           <option value="Allow">Allow</option>
                           <option value="Disallow">Disallow</option>
@@ -153,7 +195,8 @@ export default function RobotsGenerator() {
                         />
                         <button 
                           onClick={() => removeDirective(directive.id)}
-                          className="p-3 text-slate-300 hover:text-rose-500 transition-colors"
+                          className="p-3 text-slate-300 hover:text-rose-500 transition-colors cursor-pointer"
+                          aria-label="Remove Crawl Rule"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -162,25 +205,67 @@ export default function RobotsGenerator() {
                  </div>
                  <button 
                    onClick={addDirective}
-                   className="w-full py-4 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 font-bold text-sm hover:border-slate-200 hover:text-slate-500 transition-all flex items-center justify-center gap-2"
+                   className="w-full py-4 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 font-bold text-sm hover:border-slate-200 hover:text-slate-500 transition-all flex items-center justify-center gap-2 cursor-pointer"
                  >
                    <Plus size={16} /> Add Crawler Rule
                  </button>
               </div>
 
-              {/* Sitemap */}
-              <div className="space-y-2 pt-6 border-t border-slate-100">
-                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-1">Sitemap URL (Optional)</label>
-                 <div className="relative">
-                   <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                   <input 
-                     type="text" 
-                     value={sitemapUrl} 
-                     onChange={(e) => setSitemapUrl(e.target.value)}
-                     placeholder="https://example.com/sitemap_index.xml"
-                     className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-all text-sm"
-                   />
-                 </div>
+              {/* Block AI Scrapers Toggle */}
+              <div className="flex items-center justify-between p-5 bg-amber-50/40 border border-amber-100 rounded-2xl">
+                <div className="space-y-1 pr-4">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                    <Bot size={14} className="text-amber-600" /> Block AI Scrapers & Crawlers
+                  </span>
+                  <span className="text-[10.5px] text-slate-500 block leading-relaxed font-sans">
+                    Instantly restrict GPTBot, CCBot, and Anthropic-ai to preserve brand content and save hosting bandwidth.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBlockAi(!blockAi)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    blockAi ? 'bg-amber-500' : 'bg-slate-200'
+                  }`}
+                  aria-label="Toggle Block AI Scrapers & Crawlers"
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                      blockAi ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Extra Directives Grid (Sitemap & Crawl Delay) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-slate-100">
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-1">Sitemap URL (Optional)</label>
+                   <div className="relative">
+                     <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                     <input 
+                       type="text" 
+                       value={sitemapUrl} 
+                       onChange={(e) => setSitemapUrl(e.target.value)}
+                       placeholder="https://example.com/sitemap_index.xml"
+                       className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-all text-sm"
+                     />
+                   </div>
+                </div>
+
+                <div className="space-y-2">
+                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block px-1">Crawl-Delay (Optional)</label>
+                   <div className="relative">
+                     <input 
+                       type="number" 
+                       value={crawlDelay} 
+                       onChange={(e) => setCrawlDelay(e.target.value)}
+                       placeholder="e.g. 10"
+                       min="1"
+                       className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 focus:outline-none focus:border-slate-400 transition-all text-sm"
+                     />
+                   </div>
+                </div>
               </div>
             </div>
           </section>
@@ -202,14 +287,14 @@ export default function RobotsGenerator() {
                  <div className="flex gap-2">
                     <button 
                       onClick={copyToClipboard}
-                      className="p-3 bg-white/5 text-slate-400 hover:text-white rounded-xl transition-all flex items-center gap-2 font-bold text-xs"
+                      className="p-3 bg-white/5 text-slate-400 hover:text-white rounded-xl transition-all flex items-center gap-2 font-bold text-xs cursor-pointer"
                     >
                       {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                       {copied ? 'Copied' : 'Copy'}
                     </button>
                     <button 
                       onClick={downloadTxt}
-                      className="p-3 bg-indigo-600 text-white hover:bg-indigo-500 rounded-xl transition-all flex items-center gap-2 font-bold text-xs shadow-xl shadow-indigo-500/20"
+                      className="p-3 bg-indigo-600 text-white hover:bg-indigo-500 rounded-xl transition-all flex items-center gap-2 font-bold text-xs shadow-xl shadow-indigo-500/20 cursor-pointer"
                     >
                       <Download size={14} />
                       Download
@@ -235,106 +320,56 @@ export default function RobotsGenerator() {
         </div>
       </div>
 
-      {/* SEO Content Section */}
-      <section className="mt-32 space-y-24">
-        {/* Value Prop */}
-        <div className="max-w-4xl mx-auto px-4">
-           <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Don't accidentally de-index your site.</h2>
-           </div>
-           <div className="bg-white border border-slate-200 p-8 md:p-16 rounded-[3.5rem] shadow-sm relative group overflow-hidden font-sans">
-              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                 <Search size={40} className="text-slate-600" />
-              </div>
-              <div className="prose prose-slate max-w-none prose-lg font-medium text-slate-600 leading-relaxed">
-                 <p>
-                    A single typo in a robots.txt file can wipe an entire site from Google. Search engine crawlers follow these directives strictly to determine where they are allowed to go. If you Disallow your root folder, your entire organic presence disappears overnight.
-                 </p>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-10 font-sans">
-                    <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100">
-                       <h4 className="text-slate-900 font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-                         <FileText size={14} className="text-indigo-600" /> Crawl Efficiency
-                       </h4>
-                       <p className="text-sm text-slate-500 leading-normal">
-                         Save your crawl budget by preventing bots from indexing duplicate content or administrative backend folders.
-                       </p>
-                    </div>
-                    <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100">
-                       <h4 className="text-slate-900 font-black uppercase text-xs tracking-widest mb-3 flex items-center gap-2">
-                         <Globe size={14} className="text-emerald-600" /> Sitemap Discovery
-                       </h4>
-                       <p className="text-sm text-slate-500 leading-normal">
-                         Attaching your sitemap URL directly to your robots.txt file helps new bots discover your site structure instantly.
-                       </p>
-                    </div>
-                 </div>
-                 <p>
-                    This generator uses a validation-first approach to ensure every line of code generated follows the industry-standard syntax used by Googlebot and Bingbot. It's an essential tool for developers and SEO managers alike.
-                 </p>
-              </div>
-           </div>
-        </div>
+      {/* Strict Layout Isolation for SEO Content (Bottom Area) */}
+      <section className="w-full max-w-5xl mx-auto mt-24 pt-12 border-t border-slate-200 prose prose-slate max-w-none print:hidden">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">What is a Robots.txt File?</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-4">
+          A robots.txt file is a simple text file placed in the root directory of your website. It acts as the instruction manual for search engine crawlers (like Googlebot or Bingbot), telling them which pages or files they are allowed to request and which ones they should ignore.
+        </p>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8">
+          It is the foundation of the Robots Exclusion Protocol (REP) and is usually the first file a search engine checks when accessing your domain.
+        </p>
 
-        {/* FAQ Accordion */}
-        <div className="max-w-4xl mx-auto px-4">
-           <div className="text-center mb-16 px-4">
-              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Crawler & Robots FAQ</h2>
-              <p className="text-slate-500 font-medium">Core concepts for managing how search engines crawl your web application.</p>
-           </div>
-           <div className="space-y-4">
-              {faqs.map((faq, idx) => (
-                <div 
-                  key={idx}
-                  className={`bg-white rounded-3xl border border-slate-200 transition-all overflow-hidden ${openFaq === idx ? 'shadow-xl shadow-slate-200/50 border-slate-300' : ''}`}
-                >
-                  <button 
-                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                    className="w-full flex items-center justify-between p-8 text-left"
-                  >
-                    <span className="text-lg md:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                      <HelpCircle size={20} className="text-slate-400" />
-                      {faq.question}
-                    </span>
-                    <ChevronDown className={`text-slate-400 transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {openFaq === idx && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                      >
-                        <div className="px-8 pb-8 pl-16">
-                          <p className="text-slate-500 leading-relaxed font-medium font-sans">
-                            {faq.answer}
-                          </p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
-           </div>
-        </div>
-      </section>
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">Why is Robots.txt Crucial for Technical SEO?</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-6">
+          A misconfigured robots.txt file can completely de-index your website, wiping out your organic traffic overnight. Conversely, a highly optimized file improves your SEO performance in several ways:
+        </p>
 
-      {/* CTA Footer */}
-      <section className="mt-32 max-w-7xl mx-auto px-4">
-        <div className="bg-slate-950 rounded-[3.5rem] p-12 md:p-24 text-center relative overflow-hidden text-white shadow-2xl">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-white/5 blur-3xl -ml-48 -mt-48 rounded-full" />
-          <div className="relative z-10">
-            <h2 className="text-4xl md:text-7xl font-black mb-8 tracking-tight text-balance">Audit Your <br/>Indexing Strategy.</h2>
-            <p className="text-xl text-white/70 max-w-2xl mx-auto mb-12 font-medium">
-              Join thousands of SEOs who use our technical tools to optimize their sites and protect their organic traffic.
+        <div className="space-y-6 mb-8">
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">1. Optimizing Crawl Budget</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              Search engines allocate a specific "crawl budget" to your site. If bots waste time crawling low-value pages (like admin dashboards, cart pages, or infinite parameter URLs), they might miss your high-value content. Blocking these areas ensures bots focus on what matters.
             </p>
-            <button 
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="px-12 py-6 bg-white text-slate-950 rounded-3xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-all shadow-2xl shadow-black/20 flex items-center gap-3 mx-auto group"
-            >
-              Configure Your Rules <ArrowRight size={18} className="group-hover:translate-x-1.5 transition-transform" />
-            </button>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">2. Preventing Duplicate Content</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              E-commerce stores often generate dynamic URLs for sorting and filtering (e.g., price=low-to-high). Using robots.txt to disallow these parameter strings prevents search engines from indexing hundreds of duplicate pages.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">3. Protecting Server Resources</h3>
+            <p className="text-slate-600 leading-relaxed font-medium">
+              Aggressive crawlers can spike server load, slowing down your website for actual human users. Applying specific directives (or crawl delays for non-Google bots) helps manage server bandwidth.
+            </p>
           </div>
         </div>
+
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">Key Robots.txt Directives Explained</h2>
+        <ul className="list-disc pl-6 space-y-2 text-slate-600 font-medium mb-8">
+          <li><strong>User-agent:</strong> Specifies which bot the rules apply to. Using an asterisk (*) applies the rules to all crawlers.</li>
+          <li><strong>Disallow:</strong> Tells the crawler exactly which URL paths or directories it is forbidden from accessing.</li>
+          <li><strong>Allow:</strong> Used to override a broader Disallow rule. For example, you might disallow a whole folder but Allow a specific script inside it.</li>
+          <li><strong>Sitemap:</strong> Points search engines to your XML sitemap, making it easier for them to discover your approved pages.</li>
+        </ul>
+
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-6">Best Practices for Deployment</h2>
+        <p className="text-slate-600 leading-relaxed font-medium mb-8">
+          Always validate your generated file before deploying it to your live server. Once uploaded to your root directory, use Google Search Console to test the file and ensure you aren't accidentally blocking critical assets like CSS or JavaScript files, which Google needs to properly render your site.
+        </p>
       </section>
     </div>
   );

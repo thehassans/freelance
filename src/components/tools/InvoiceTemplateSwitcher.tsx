@@ -59,8 +59,8 @@ const TemplateTable = ({ items, columns, currencySymbol, formatCurrency, primary
   const visibleCols = columns.filter(c => c.visible);
 
   return (
-    <div className="w-full overflow-x-auto print:overflow-visible mb-8">
-      <table className="w-full table-fixed border-collapse">
+    <div className="w-full overflow-x-auto mt-6 pb-4 print:overflow-visible mb-8">
+      <table className="w-full min-w-[700px] text-left text-sm border-collapse">
         <thead>
           <tr className="border-b border-slate-200">
             {visibleCols.map((col, idx) => {
@@ -68,8 +68,12 @@ const TemplateTable = ({ items, columns, currencySymbol, formatCurrency, primary
               return (
                 <th 
                   key={col.id} 
-                  className={`py-3 px-4 text-[10px] uppercase font-black tracking-widest text-slate-400 ${isNumeric ? 'text-right' : 'text-left'}`}
-                  style={idx === 0 ? { width: '40%' } : {}}
+                  className={`py-3 px-4 text-[10px] uppercase font-black tracking-widest text-slate-400 whitespace-nowrap ${isNumeric ? 'text-right' : 'text-left'}`}
+                  style={
+                    idx === 0 ? { width: '150px' } : 
+                    idx === 1 ? { width: '60px' } : 
+                    {}
+                  }
                 >
                   {col.name}
                 </th>
@@ -112,9 +116,8 @@ const TemplateTable = ({ items, columns, currencySymbol, formatCurrency, primary
 };
 
 const TotalsSection = ({ subtotal, taxAmount, discountAmount, total, balanceDue, currencySymbol, formatCurrency, primaryColor, taxType }: any) => (
-  <div className="flex justify-end mt-8 print:mt-4">
-    <div className="w-full max-w-[300px] space-y-2">
-      <div className="flex justify-between items-center text-sm">
+  <div className="w-full sm:w-1/2 md:w-1/3 ml-auto mt-6 print:mt-4 space-y-2">
+    <div className="flex justify-between items-center text-sm">
         <span className="text-slate-500 font-medium">Subtotal</span>
         <span className="text-slate-900 font-semibold">{currencySymbol}{formatCurrency(subtotal)}</span>
       </div>
@@ -140,7 +143,6 @@ const TotalsSection = ({ subtotal, taxAmount, discountAmount, total, balanceDue,
           <span className="text-slate-900 font-bold">{currencySymbol}{formatCurrency(balanceDue)}</span>
         </div>
       )}
-    </div>
   </div>
 );
 
@@ -202,15 +204,15 @@ export const InvoiceTemplateSwitcher: React.FC<InvoiceTemplateSwitcherProps> = (
 
   const renderClassic = () => (
     <div className="bg-white w-full">
-      <div className="bg-slate-900 p-8 flex justify-between items-center" style={{ backgroundColor: primaryColor }}>
-        <h1 className="text-3xl font-black text-white tracking-[0.1em]">INVOICE</h1>
+      <div className="w-full bg-slate-900 px-4 md:px-8 py-6 md:py-10 flex justify-between items-center" style={{ backgroundColor: primaryColor }}>
+        <h1 className="text-2xl md:text-4xl font-black text-white tracking-[0.1em]">INVOICE</h1>
         <div className="w-24 h-14 border border-white/20 rounded flex items-center justify-center overflow-hidden">
           {logo ? <img src={logo} className="w-full h-full object-contain" alt="logo" /> : <span className="text-white text-[10px] font-bold">LOGO</span>}
         </div>
       </div>
-      <div className="p-9">
+      <div className="p-4 sm:p-9">
         <p className="text-sm font-bold text-slate-900 mb-6">{invoiceData.fromBusiness} · {invoiceData.fromEmail} · {invoiceData.fromContact || '--'}</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 w-full mb-8">
           <div>
             <p className="text-[9px] uppercase font-bold tracking-widest text-slate-400 mb-1">Bill To</p>
             <p className="text-sm font-bold text-slate-900">{invoiceData.toBusiness}</p>
