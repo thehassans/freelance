@@ -50,9 +50,12 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
               </div>
             </div>
             <div className="space-y-1"><label className="text-[#6B7280]">Status</label>
-              <div className="flex gap-4">
-                {['published', 'draft', 'disabled'].map(t => (
-                  <label key={t} className="flex items-center gap-2 text-white capitalize"><input type="radio" checked={draft.status === t} onChange={() => setDraft({...draft, status: t})} /> {t}</label>
+              <div className="flex gap-4 flex-wrap">
+                {['published', 'coming_soon', 'draft', 'disabled'].map(t => (
+                  <label key={t} className="flex items-center gap-2 text-white capitalize select-none cursor-pointer">
+                    <input type="radio" checked={draft.status === t} onChange={() => setDraft({...draft, status: t})} /> 
+                    {t === 'coming_soon' ? 'Coming Soon' : t}
+                  </label>
                 ))}
               </div>
             </div>
@@ -62,6 +65,12 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
             </div>
             <div className="space-y-1"><label className="flex items-center gap-2 text-white"><input type="checkbox" checked={draft.isAI} onChange={e => setDraft({...draft, isAI: e.target.checked})} /> Is AI Powered</label></div>
             <div className="space-y-1"><label className="text-[#6B7280]">Description</label><textarea value={draft.description} onChange={e => setDraft({...draft, description: e.target.value})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white h-20" /></div>
+            <div className="space-y-1 pt-1">
+              <label className="flex items-center gap-2 text-white cursor-pointer select-none">
+                <input type="checkbox" checked={draft.trackNotifyClicks || false} onChange={e => setDraft({...draft, trackNotifyClicks: e.target.checked})} />
+                Track 'Notify Me' Clicks
+              </label>
+            </div>
           </>
         )}
         {tab === 'seo' && (
@@ -71,9 +80,30 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
           </>
         )}
         {tab === 'pro' && (
-          <>
-            <div className="space-y-1"><label className="text-[#6B7280]">Free Usage Limit</label><input type="number" value={draft.freeLimit || ''} placeholder="Unlimited" onChange={e => setDraft({...draft, freeLimit: e.target.value ? parseInt(e.target.value) : null})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white" /></div>
-          </>
+          <div className="space-y-4">
+            <div className="space-y-1 text-xs">
+              <label className="text-[#6B7280] font-bold block mb-1">Free Usage Limit</label>
+              <input type="number" value={draft.freeLimit || ''} placeholder="Unlimited" onChange={e => setDraft({...draft, freeLimit: e.target.value ? parseInt(e.target.value) : null})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white font-mono" />
+            </div>
+
+            <div className="space-y-1 text-xs">
+              <label className="text-[#6B7280] font-bold block mb-1">Token/Credit Custom Cost</label>
+              <input type="number" min={0} value={draft.creditCost !== undefined ? draft.creditCost : 1} placeholder="e.g., 5" onChange={e => setDraft({...draft, creditCost: e.target.value ? parseInt(e.target.value) : 0})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white font-mono" />
+              <p className="text-[10px] text-[#6B7280] mt-0.5">Specify how many credits a single run of this tool costs a user.</p>
+            </div>
+
+            <div className="space-y-1 text-xs">
+              <label className="text-[#6B7280] font-bold block mb-1">Daily Usage Rate Limit Capping</label>
+              <input type="number" min={0} value={draft.dailyRateLimit !== undefined ? draft.dailyRateLimit : ''} placeholder="Unlimited" onChange={e => setDraft({...draft, dailyRateLimit: e.target.value ? parseInt(e.target.value) : null})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white font-mono" />
+              <p className="text-[10px] text-[#6B7280] mt-0.5">Allow maximum total requests per day across the platform for this tool.</p>
+            </div>
+
+            <div className="space-y-1 text-xs">
+              <label className="text-[#6B7280] font-bold block mb-1">Custom Backend API Endpoint Field</label>
+              <input type="text" value={draft.apiEndpoint || ''} placeholder="e.g., /api/audit/wordpress" onChange={e => setDraft({...draft, apiEndpoint: e.target.value})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white font-mono text-[11px]" />
+              <p className="text-[10px] text-[#6B7280] mt-0.5">Visually map your frontend tool to your target server route.</p>
+            </div>
+          </div>
         )}
         {tab === 'ai' && draft.isAI && (
           <>
@@ -190,9 +220,10 @@ export default function ToolsView({ showToast }: { showToast: (msg: string, type
                 <td className="p-4">
                   <span className={`px-2 py-1 text-[10px] rounded uppercase font-bold tracking-widest ${
                     tool.status === 'published' ? 'bg-[#6EE7B7]/10 text-[#6EE7B7]' : 
+                    tool.status === 'coming_soon' ? 'bg-[#F59E0B]/15 text-[#F59E0B]' : 
                     tool.status === 'disabled' ? 'bg-[#F87171]/10 text-[#F87171]' : 
                     'bg-slate-800 text-slate-400'
-                  }`}>{tool.status}</span>
+                  }`}>{tool.status?.replace('_', ' ')}</span>
                 </td>
                 <td className="p-4 font-mono text-xs text-[#6EE7B7]">{tool.launchCount || 0}</td>
                 <td className="p-4 flex flex-col gap-2">

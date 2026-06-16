@@ -21,30 +21,54 @@ export default function ContractPortal({ shareId }: ContractPortalProps) {
   useEffect(() => {
     const fetchContract = async () => {
       try {
-        const q = query(collection(db, 'contracts'), where('shareId', '==', shareId));
-        const snapshot = await getDocs(q);
-        
-        if (snapshot.empty) {
+        let data: any = null;
+        let isFallback = false;
+
+        try {
+          const q = query(collection(db, 'contracts'), where('shareId', '==', shareId));
+          const snapshot = await getDocs(q);
+          
+          if (!snapshot.empty) {
+            data = snapshot.docs[0].data();
+            data.id = snapshot.docs[0].id;
+          }
+        } catch (fbErr: any) {
+          console.warn("Client-side Firestore query failed, calling API fallback:", fbErr.message);
+          isFallback = true;
+        }
+
+        if (isFallback || !data) {
+          const res = await fetch(`/api/contract/${shareId}`);
+          if (!res.ok) {
+            throw new Error("This agreement could not be found or has been removed.");
+          }
+          data = await res.json();
+        }
+
+        if (!data) {
           setError("This agreement could not be found or has been removed.");
           setLoading(false);
           return;
         }
 
-        const data = snapshot.docs[0].data();
-        setContract({ id: snapshot.docs[0].id, ...data });
+        setContract(data);
         setLoading(false);
 
         // Silent tracking
         fetch(`/api/contract/${shareId}/viewed`, { method: 'POST' });
         
-        // Listen for live updates (e.g. if freelancer signs while client watches)
-        const unsub = onSnapshot(snapshot.docs[0].ref, (doc) => {
-          setContract({ id: doc.id, ...doc.data() });
-        });
-        return () => unsub();
-      } catch (err) {
+        // Listen for live updates if we used firestore and doc id exists
+        if (!isFallback && data.id) {
+          const unsub = onSnapshot(doc(db, 'contracts', data.id), (docSnapshot) => {
+            if (docSnapshot.exists()) {
+              setContract({ id: docSnapshot.id, ...docSnapshot.data() });
+            }
+          });
+          return () => unsub();
+        }
+      } catch (err: any) {
         console.error("Fetch error:", err);
-        setError("Failed to load agreement. Please check your connection.");
+        setError(err.message || "Failed to load agreement. Please check your connection.");
         setLoading(false);
       }
     };

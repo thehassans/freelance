@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { usePremiumAction } from '../../hooks/usePremiumAction';
 import { DatabaseService, LiveBacklinkReport } from '../../services/DatabaseService';
+import LockedToolOverlay from '../common/LockedToolOverlay';
 import FreemiumExportWrapper from '../common/FreemiumExportWrapper';
 import { toast } from 'sonner';
 
@@ -115,7 +116,7 @@ export default function BacklinkAuditor() {
       <div className="max-w-4xl mx-auto text-center space-y-6 pt-12 pb-8">
         <div className="flex justify-center items-center gap-3 mb-4">
           <span className="px-3 py-1 bg-[#6c63ff]/10 text-[#6c63ff] rounded-full text-[10px] font-black uppercase tracking-widest">
-            Freemium Tool
+            FREEMIUM TOOL
           </span>
           <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest">
             SEO & Dev
@@ -145,42 +146,9 @@ export default function BacklinkAuditor() {
         </div>
       </div>
 
-      {/* Hero Search Section */}
+      {/* Hero Search Section (Locked) */}
       <section className="text-center max-w-3xl mx-auto py-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-2 rounded-[2.5rem] shadow-2xl shadow-[#6c63ff]/10 border border-slate-100 flex flex-col sm:flex-row gap-2"
-        >
-          <div className="flex-grow relative">
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400">
-              <Globe size={20} />
-            </div>
-            <input 
-              type="text" 
-              placeholder="Enter domain (e.g., competitor.com)"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="w-full pl-16 pr-6 py-6 bg-slate-50 border-none rounded-[2rem] font-bold text-slate-900 focus:ring-0 placeholder:text-slate-300"
-              onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-            />
-          </div>
-          <button 
-            onClick={handleAnalyze}
-            disabled={isAnalyzing || !domain}
-            className="px-10 py-6 bg-slate-900 text-white rounded-[2rem] font-black uppercase tracking-widest text-[10px] hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isAnalyzing ? (
-              <>
-                <Loader2 size={16} className="animate-spin" /> Analyzing...
-              </>
-            ) : (
-              <>
-                Analyze Domain <ArrowRight size={16} />
-              </>
-            )}
-          </button>
-        </motion.div>
+        <LockedToolOverlay />
       </section>
 
       <AnimatePresence mode="wait">

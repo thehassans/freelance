@@ -19,6 +19,7 @@ import {
   XCircle,
   Loader2
 } from 'lucide-react';
+import LockedToolOverlay from '../common/LockedToolOverlay';
 
 interface ScanResult {
   id: string;
@@ -163,8 +164,13 @@ export default function WpSecurityAuditor() {
 
       {/* Tool Header */}
       <div className="text-center space-y-4 print:hidden">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold uppercase tracking-wider">
-          <Layers size={14} /> WP Hardening
+        <div className="flex justify-center items-center gap-3">
+          <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100">
+            FREEMIUM TOOL
+          </span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-xs font-bold uppercase tracking-wider">
+            <Layers size={14} /> WP Hardening
+          </div>
         </div>
         <h1 className="text-4xl font-black text-slate-900 tracking-tight">
           WordPress Security Hardening Auditor
@@ -174,65 +180,8 @@ export default function WpSecurityAuditor() {
         </p>
       </div>
 
-      {/* Input Module */}
-      <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 relative overflow-hidden print:hidden">
-        <div className="flex flex-col md:flex-row gap-4 relative z-10">
-          <div className="relative flex-grow">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-400">
-              <Globe size={20} />
-            </div>
-            <input
-              type="text"
-              placeholder="https://client-wordpress-site.com"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 outline-none transition-all text-slate-900 font-medium font-mono text-sm"
-            />
-          </div>
-          <button
-            onClick={performAudit}
-            disabled={isScanning || !url}
-            className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg shadow-slate-900/20 active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 group"
-          >
-            {isScanning ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} className="group-hover:scale-110 transition-transform" />}
-            {isScanning ? 'Analyzing...' : 'Start Audit'}
-          </button>
-        </div>
-        
-        {error && (
-          <div className="mt-4 p-3 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold flex items-center gap-2 border border-rose-100">
-            <AlertTriangle size={14} /> {error}
-          </div>
-        )}
-        
-        {isScanning && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-6 space-y-4"
-          >
-            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-rose-500"
-                animate={{ width: ['0%', '100%'] }}
-                transition={{ duration: 2, ease: "easeInOut" }}
-              />
-            </div>
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">
-              <Cpu size={14} className="text-rose-500" />
-              {scanStep}
-            </div>
-          </motion.div>
-        )}
-
-        <div className="mt-4 flex items-center gap-4 text-[10px] text-slate-400 font-black uppercase tracking-widest px-2">
-          <span>Non-Intrusive Scan</span>
-          <span className="w-1 h-1 bg-slate-200 rounded-full" />
-          <span>Real-time Detection</span>
-          <span className="w-1 h-1 bg-slate-200 rounded-full" />
-          <span>Care Plan Ready</span>
-        </div>
-      </div>
+      {/* Input Module (Locked) */}
+      <LockedToolOverlay />
 
       <AnimatePresence mode="wait">
         {results && !isScanning && (

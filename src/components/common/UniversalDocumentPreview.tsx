@@ -16,6 +16,7 @@ interface UniversalDocumentPreviewProps {
   extraActions?: React.ReactNode;
   toolId?: string;
   containerClassName?: string;
+  onPdfClick?: (e: React.MouseEvent) => void;
 }
 
 export default function UniversalDocumentPreview({ 
@@ -28,7 +29,8 @@ export default function UniversalDocumentPreview({
   hideControls = false,
   extraActions,
   toolId,
-  containerClassName
+  containerClassName,
+  onPdfClick
 }: UniversalDocumentPreviewProps) {
   const { isPro } = useUser();
   const { handleProtectedExport } = useProtectedExport();
@@ -105,7 +107,7 @@ export default function UniversalDocumentPreview({
                 </button>
                 <button 
                   type="button"
-                  onClick={handleExportPDF}
+                  onClick={onPdfClick || handleExportPDF}
                   disabled={isLoading}
                   className="flex items-center gap-2 py-2.5 px-6 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50 shadow-xl shadow-slate-900/20 active:scale-95 cursor-pointer"
                 >

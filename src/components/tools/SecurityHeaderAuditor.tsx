@@ -26,6 +26,7 @@ import {
 import { DatabaseService, AuditReportPayload } from '../../services/DatabaseService';
 import { usePremiumAction } from '../../hooks/usePremiumAction';
 import { toast } from 'sonner';
+import LockedToolOverlay from '../common/LockedToolOverlay';
 
 export default function SecurityHeaderAuditor() {
   const [url, setUrl] = useState('');
@@ -116,7 +117,7 @@ export default function SecurityHeaderAuditor() {
       <div className="max-w-6xl mx-auto px-6 mb-12">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <span className="bg-indigo-100 text-indigo-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">Freemium Tool</span>
+            <span className="bg-indigo-100 text-indigo-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">FREEMIUM TOOL</span>
             <span className="bg-rose-100 text-rose-800 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">Security</span>
           </div>
           <button 
@@ -137,44 +138,10 @@ export default function SecurityHeaderAuditor() {
         </p>
       </div>
 
-      {/* Hero Input Area */}
-      {!auditData && !isAuditing && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-3xl mx-auto px-6 mb-24"
-        >
-          <div className="bg-white rounded-3xl shadow-xl p-8 border border-slate-200">
-            <form onSubmit={runAudit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">
-                  Target URL to Analyze
-                </label>
-                <div className="relative flex items-center">
-                  <div className="absolute left-4 text-slate-400">
-                    <Globe size={20} />
-                  </div>
-                  <input 
-                    type="url" 
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://example.com"
-                    required
-                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 transition-all text-lg"
-                  />
-                </div>
-              </div>
-              <button 
-                type="submit"
-                className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
-              >
-                <Search size={22} />
-                Run Comprehensive Audit
-              </button>
-            </form>
-          </div>
-        </motion.div>
-      )}
+      {/* Hero Input Area (Locked) */}
+      <div className="max-w-3xl mx-auto px-6 mb-24">
+        <LockedToolOverlay />
+      </div>
 
       {/* Loading State */}
       {isAuditing && (

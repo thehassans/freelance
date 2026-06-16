@@ -16,6 +16,9 @@ export default function ArticleViewer({ article, onBack, onToolClick }: ArticleV
         title: article.title,
         text: article.description,
         url: window.location.href,
+      }).catch((error) => {
+        // Quietly catch cancellation and other sharing abort exceptions
+        console.log('Share prompt dismissed:', error);
       });
     } else {
       navigator.clipboard.writeText(window.location.href);

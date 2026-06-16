@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePremiumAction } from '../../hooks/usePremiumAction';
+import LockedToolOverlay from '../common/LockedToolOverlay';
 
 type ToolState = 'idle' | 'loading' | 'success';
 
@@ -131,44 +132,10 @@ export default function CSRDecoder() {
         </div>
       </div>
 
-      {state === 'idle' && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto"
-        >
-          <div className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50">
-            <div className="text-center mb-8">
-               <div className="w-16 h-16 bg-slate-100 text-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6 transform -rotate-3">
-                 <FileCode size={32} />
-               </div>
-               <h2 className="text-2xl font-bold text-slate-900 mb-2">Decode Your Certificate Request</h2>
-               <p className="text-slate-500 max-w-xl mx-auto">
-                 Paste your Base64 encoded CSR or SSL Certificate below to instantly unpack and verify the structural contents.
-               </p>
-            </div>
-            
-            <form onSubmit={handleDecode} className="space-y-6">
-              <div className="relative">
-                <textarea
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="-----BEGIN CERTIFICATE REQUEST-----&#10;MIICzDCCAbQCAQAwgYYxCzAJBgNVBAYTAlVT...&#10;-----END CERTIFICATE REQUEST-----"
-                  className="w-full h-80 px-6 py-6 bg-slate-900 text-slate-300 font-mono text-sm leading-relaxed border border-slate-800 rounded-2xl focus:ring-2 focus:ring-[#6c63ff] focus:border-[#6c63ff] transition-all outline-none resize-none placeholder-slate-700"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full sm:w-auto mx-auto px-10 py-4 bg-[#6c63ff] hover:bg-[#5b54d6] text-white rounded-xl font-bold transition-colors shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
-              >
-                <Search size={20} />
-                Decode Certificate
-              </button>
-            </form>
-          </div>
-        </motion.div>
-      )}
+      {/* Locked Input Area */}
+      <div className="max-w-4xl mx-auto">
+        <LockedToolOverlay />
+      </div>
 
       {state === 'loading' && (
         <motion.div 

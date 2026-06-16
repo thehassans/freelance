@@ -39,3 +39,14 @@ export function trackToolLaunch(toolId: string, toolName: string, toolTier: stri
     storage.set('fk_tools', tools);
   }
 }
+
+export function trackWaitlistClick(toolId: string) {
+  const tools = storage.get('fk_tools') || [];
+  const idx = tools.findIndex((t: any) => t.id === toolId);
+  if (idx > -1) {
+    if (tools[idx].trackNotifyClicks) {
+      tools[idx].waitlist_clicks = (tools[idx].waitlist_clicks || 0) + 1;
+      storage.set('fk_tools', tools);
+    }
+  }
+}

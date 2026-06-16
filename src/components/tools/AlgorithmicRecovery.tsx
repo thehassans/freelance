@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { pdf } from '@react-pdf/renderer';
 import AlgorithmicRecoveryPDF from './AlgorithmicRecoveryPDF';
+import LockedToolOverlay from '../common/LockedToolOverlay';
 
 // Mock algorithm updates metadata
 const ALGO_UPDATES = [
@@ -126,8 +127,8 @@ export default function AlgorithmicRecovery() {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
         <div>
           <div className="flex items-center gap-2 mb-3">
-             <span className="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 flex items-center gap-1.5">
-               <Sparkles size={10} fill="currentColor" /> Pro Elite Tool
+             <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-indigo-100 flex items-center gap-1.5">
+               FREEMIUM TOOL
              </span>
              <span className="text-slate-400 text-sm font-medium">Diagnostic Engine v4.2</span>
           </div>
@@ -155,31 +156,8 @@ export default function AlgorithmicRecovery() {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm mb-12">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-grow">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input 
-              type="text"
-              placeholder="Enter domain (e.g. youragency.com)"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-100 rounded-2xl py-4 pl-12 pr-4 font-bold text-slate-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-            />
-          </div>
-          <button 
-            onClick={() => domain && generateAuditReport(domain)}
-            disabled={analyzing || !domain}
-            className="bg-[#0f4c75] text-white px-10 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-[#0b395a] transition-all disabled:opacity-50"
-          >
-            {analyzing ? 'Scanning System...' : 'Run Analysis'}
-          </button>
-        </div>
-        <p className="mt-4 text-xs text-slate-400 font-medium">
-          Note: This engine pulls from GSC-simulated datasets and does not require manual API authentication.
-        </p>
-      </div>
+      {/* Search Bar (Locked) */}
+      <LockedToolOverlay />
 
       <AnimatePresence mode="wait">
         {report && (

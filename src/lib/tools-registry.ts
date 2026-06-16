@@ -257,7 +257,7 @@ export const TOOLS: Tool[] = [
     description: 'Generate GDPR-compliant privacy policies for your website.',
     category: 'legal',
     icon: ShieldCheck,
-    tier: 'FREE',
+    tier: 'FREEMIUM',
     hasAI: false,
     component: 'PrivacyPolicyGenerator',
     personas: ['engineer', 'designer', 'agency'],

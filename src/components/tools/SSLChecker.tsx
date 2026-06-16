@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePremiumAction } from '../../hooks/usePremiumAction';
+import LockedToolOverlay from '../common/LockedToolOverlay';
 
 type ToolState = 'idle' | 'loading' | 'success';
 
@@ -198,44 +199,10 @@ export default function SSLChecker() {
         </div>
       </div>
 
-      {state === 'idle' && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto mt-16"
-        >
-          <div className="bg-white p-8 md:p-12 rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 text-center">
-            <div className="w-16 h-16 bg-indigo-50 text-[#6c63ff] rounded-2xl flex items-center justify-center mx-auto mb-6 transform -rotate-6">
-              <Lock size={32} />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Audit Your Domain Security</h2>
-            <p className="text-slate-500 mb-8 max-w-md mx-auto">
-              Enter your domain to run a comprehensive TLS analysis, check for vulnerabilities, and inspect certificate details.
-            </p>
-            
-            <form onSubmit={handleScan} className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="e.g., myfreelancesite.com"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#6c63ff] focus:border-[#6c63ff] transition-all outline-none font-medium"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-8 py-4 bg-[#6c63ff] hover:bg-[#5b54d6] text-white rounded-xl font-bold transition-colors shadow-lg shadow-indigo-200 whitespace-nowrap flex items-center justify-center gap-2"
-              >
-                <Search size={20} />
-                Scan SSL Certificate
-              </button>
-            </form>
-          </div>
-        </motion.div>
-      )}
+      {/* Locked Input Area */}
+      <div className="max-w-2xl mx-auto mt-16">
+        <LockedToolOverlay />
+      </div>
 
       {state === 'loading' && (
         <motion.div 
