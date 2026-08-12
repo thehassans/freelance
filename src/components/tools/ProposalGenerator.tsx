@@ -5,7 +5,8 @@ import {
   FileText, Crown, Upload, Trash2, Palette, PenTool, 
   ArrowLeft, Layout, FileDown, Eye, CheckCircle2
 } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
+import { getGenAI } from '../../lib/gemini';
+import { toast } from 'sonner';
 import { pdf, PDFViewer } from '@react-pdf/renderer';
 import { saveAs } from 'file-saver';
 import FreemiumExportWrapper from '../common/FreemiumExportWrapper';
@@ -18,8 +19,6 @@ import { DatabaseService } from '../../services/DatabaseService';
 import { usePremiumAction } from '../../hooks/usePremiumAction';
 
 import { useFeatureGate } from '../../hooks/useFeatureGate';
-
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
 
 type Phase = 'form' | 'loading' | 'edit' | 'preview';
 
@@ -93,6 +92,12 @@ export default function ProposalGenerator({ onPricingClick }: { onPricingClick?:
   const handleGenerate = async () => {
     if (!formData.projectType || !formData.clientName) return;
     
+    const genAI = getGenAI();
+    if (!genAI) {
+      toast.error('GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY in your .env or .env.local file.');
+      return;
+    }
+
     executeAction(async (userId) => {
       setPhase('loading');
       
@@ -100,7 +105,7 @@ export default function ProposalGenerator({ onPricingClick }: { onPricingClick?:
         await DatabaseService.logToolUsage('proposal-gen');
         
         const response = await genAI.models.generateContent({
-          model: 'gemini-3-flash-preview',
+          model: 'gemini-2.5-flash',
           contents: `Write a high-ticket agency proposal.
           
           Project: ${formData.projectType}
@@ -126,8 +131,9 @@ export default function ProposalGenerator({ onPricingClick }: { onPricingClick?:
         setEditorContent(generated);
         saveToHistory(generated);
         setPhase('edit');
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error generating proposal:', error);
+        toast.error(error?.message || 'Error generating proposal. Please check your Gemini API key.');
         setEditorContent('<p>Error generating proposal. Please check your configuration.</p>');
         setPhase('form');
       }

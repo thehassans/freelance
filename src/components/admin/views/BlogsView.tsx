@@ -35,38 +35,38 @@ export default function BlogsView({ showToast, typeFilter }: { showToast: (msg: 
   return (
     <div className="max-w-6xl space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-[#E8EAF0]">
+        <h1 className="text-2xl font-bold text-slate-900">
           {typeFilter === 'blogs' ? 'Blog Posts' : 'SOPs & Guides'}
         </h1>
-        <button className="flex items-center gap-2 px-4 py-2 bg-[#6EE7B7] text-[#0B0C14] font-bold rounded-lg hover:bg-[#6EE7B7]/90 transition-colors">
+        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">
           <Plus size={16} /> New {typeFilter === 'blogs' ? 'Post' : 'SOP'}
         </button>
       </div>
 
-      <div className="bg-[#1C2340] border border-[#252E4A] rounded-xl overflow-hidden">
+      <div className="bg-slate-100 border border-slate-200 rounded-xl overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr>
-              <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">TITLE</th>
-              <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">TYPE</th>
-              <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">STATUS</th>
-              <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">VIEWS</th>
-              <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">DATE</th>
-              <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">ACTIONS</th>
+              <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">TITLE</th>
+              <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">TYPE</th>
+              <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">STATUS</th>
+              <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">VIEWS</th>
+              <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">DATE</th>
+              <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
             {filteredBlogs.map(blog => (
-              <tr key={blog.id} className="border-b border-[#252E4A] hover:bg-[#252E4A]/30">
-                <td className="p-4 text-[#E8EAF0] text-sm max-w-xs truncate">{blog.title}</td>
-                <td className="p-4 text-[#6B7280] text-sm">{blog.type}</td>
+              <tr key={blog.id} className="border-b border-slate-200 hover:bg-[#252E4A]/30">
+                <td className="p-4 text-slate-900 text-sm max-w-xs truncate">{blog.title}</td>
+                <td className="p-4 text-slate-500 text-sm">{blog.type}</td>
                 <td className="p-4">
-                  <span className={`text-xs font-bold px-2 py-1 rounded tracking-widest ${blog.status === 'published' ? 'bg-[#6EE7B7]/10 text-[#6EE7B7]' : 'bg-[#252E4A] text-[#6B7280]'}`}>
+                  <span className={`text-xs font-bold px-2 py-1 rounded tracking-widest ${blog.status === 'published' ? 'bg-primary/10 text-primary' : 'bg-[#252E4A] text-slate-500'}`}>
                     {blog.status === 'published' ? '● Published' : '○ Draft'}
                   </span>
                 </td>
-                <td className="p-4 text-[#6B7280] text-sm font-mono">{blog.views || 0}</td>
-                <td className="p-4 text-[#6B7280] text-sm">{blog.publishedAt ? new Date(blog.publishedAt).toLocaleDateString() : '—'}</td>
+                <td className="p-4 text-slate-500 text-sm font-mono">{blog.views || 0}</td>
+                <td className="p-4 text-slate-500 text-sm">{blog.publishedAt ? new Date(blog.publishedAt).toLocaleDateString() : '—'}</td>
                 <td className="p-4">
                   <div className="flex gap-2">
                     <button className="p-1.5 bg-[#252E4A] text-white rounded hover:bg-[#343F61] transition-colors"><Pencil size={14} /></button>
@@ -78,7 +78,7 @@ export default function BlogsView({ showToast, typeFilter }: { showToast: (msg: 
           </tbody>
         </table>
         {filteredBlogs.length === 0 && (
-          <div className="p-8 text-center text-[#6B7280]">
+          <div className="p-8 text-center text-slate-500">
             No {typeFilter === 'blogs' ? 'blog posts' : 'SOPs'} found.
           </div>
         )}

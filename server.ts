@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
@@ -106,17 +107,15 @@ async function updateMockContract(shareId: string, updates: any) {
   return null;
 }
 
-// Initialize Firebase Admin (Attempt)
-// This assumes the environment has default credentials or we will catch errors gracefully
+let db: any = null;
 try {
   admin.initializeApp({
     // credential: admin.credential.applicationDefault()
   });
+  db = admin.firestore?.();
 } catch (e) {
-  console.error("Firebase Admin initialization failed. Proceeding with caution.");
+  // Firebase Admin credentials not configured; server will use local mock DB
 }
-
-const db = admin.firestore?.();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -149,11 +148,11 @@ async function getAllMdxSlugs(folder: string) {
   }
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(cors());
   app.use(express.json({ limit: '50mb' })); // Handling base64 signatures
@@ -349,7 +348,7 @@ async function startServer() {
       const pdfBuffer = await renderToBuffer(pdfElement);
 
       // 3. Email execution notification
-      if (process.env.RESEND_API_KEY) {
+      if (resend && process.env.RESEND_API_KEY) {
         try {
           await resend.emails.send({
             from: 'contracts@freelancerkit.io',

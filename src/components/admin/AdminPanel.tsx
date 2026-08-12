@@ -50,14 +50,14 @@ export default function AdminPanel({ view, setView, onExit }: { view: string, se
   ];
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#0B0C14] text-[#E8EAF0] flex flex-col font-sans overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-slate-50 text-slate-900 flex flex-col font-sans overflow-hidden">
       {/* TopBar */}
-      <div className="h-16 border-b border-[#252E4A] bg-[#13192B] flex items-center justify-between px-6 shrink-0">
+      <div className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-4">
-          <div className="font-black text-[#6EE7B7] text-xl tracking-tighter">FK ADMIN</div>
+          <img src="/freelancerkitlogo.png" alt="Freelancer Kit Logo" className="h-8 object-contain" />
         </div>
         <div className="flex items-center gap-4">
-          <button onClick={onExit} className="text-[#6B7280] hover:text-[#E8EAF0] text-sm font-medium transition-colors">
+          <button onClick={onExit} className="text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors">
             ← Exit to Site
           </button>
         </div>
@@ -65,17 +65,17 @@ export default function AdminPanel({ view, setView, onExit }: { view: string, se
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <div className="w-64 border-r border-[#252E4A] bg-[#13192B] p-4 flex flex-col gap-6 shrink-0 overflow-y-auto">
+        <div className="w-64 border-r border-slate-200 bg-white p-4 flex flex-col gap-6 shrink-0 overflow-y-auto">
           {menu.map((group, i) => (
             <div key={i}>
-              <div className="text-[10px] font-bold text-[#6B7280] mb-2 tracking-widest">{group.section}</div>
+              <div className="text-[10px] font-bold text-slate-500 mb-2 tracking-widest">{group.section}</div>
               <div className="flex flex-col gap-1">
                 {group.items.map(item => (
                   <button
                     key={item.id}
                     onClick={() => setView(item.id)}
                     className={`text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      view === item.id ? 'bg-[#1C2340] text-[#6EE7B7]' : 'text-[#E8EAF0] hover:bg-[#1C2340]/50'
+                      view === item.id ? 'bg-slate-100 text-primary' : 'text-slate-900 hover:bg-slate-100/50'
                     }`}
                   >
                     {item.label}
@@ -87,7 +87,7 @@ export default function AdminPanel({ view, setView, onExit }: { view: string, se
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-[#0B0C14] overflow-y-auto p-8">
+        <div className="flex-1 bg-slate-50 overflow-y-auto p-8">
           {view === 'dashboard' && <DashboardView />}
           {view === 'tools' && <ToolsView showToast={showToast} />}
           {view === 'seo' && <SeoOverridesView showToast={showToast} />}

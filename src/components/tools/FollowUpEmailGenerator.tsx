@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Send, Copy, Check, Loader2, MessageSquare, Coffee, ShieldAlert, Sparkles, Clock, Lock, RotateCcw, ExternalLink, X, ArrowRight, Zap } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
+import { getGenAI } from '../../lib/gemini';
 import { useUser } from '../../contexts/UserContext';
 import { usePremiumAction } from '../../hooks/usePremiumAction';
 import { DatabaseService } from '../../services/DatabaseService';
 import FreemiumExportWrapper from '../common/FreemiumExportWrapper';
 import { toast } from 'sonner';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 type Situation = 'proposal_followup' | 'overdue_invoice' | 'project_checkin' | 'feedback_request';
 
@@ -34,6 +32,12 @@ export default function FollowUpEmailGenerator() {
 
   const generateDraft = async () => {
     if (!clientName) return;
+
+    const ai = getGenAI();
+    if (!ai) {
+      toast.error('GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY in your .env or .env.local file.');
+      return;
+    }
 
     executeAction(async (userId) => {
       setIsGenerating(true);
@@ -71,7 +75,7 @@ export default function FollowUpEmailGenerator() {
         `;
 
         const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
+          model: "gemini-2.5-flash",
           contents: prompt,
         });
 
@@ -87,8 +91,9 @@ export default function FollowUpEmailGenerator() {
           setSubject(`Follow up: ${projectName || 'Our Project'}`);
           setBody(text.replace(/Subject: .*/i, '').replace(/Body: /i, '').trim());
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Draft generation failed:', error);
+        toast.error(error?.message || 'Failed to generate email draft. Please check your Gemini API key.');
       } finally {
         setIsGenerating(false);
       }

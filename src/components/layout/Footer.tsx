@@ -38,12 +38,7 @@ export default function Footer({
               className="flex items-center gap-2 cursor-pointer group w-fit"
               onClick={(e) => handleLinkClick(e, 'home')}
             >
-              <div className="bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
-                <Briefcase className="w-6 h-6" />
-              </div>
-              <span className="text-2xl font-black tracking-tight text-slate-900">
-                Freelancer<span className="text-primary">Kit</span>
-              </span>
+              <img src="/freelancerkitlogo.png" alt="Freelancer Kit Logo" className="h-16 md:h-20 object-contain" />
             </div>
             
             <p className="text-sm text-gray-500 max-w-sm leading-relaxed">

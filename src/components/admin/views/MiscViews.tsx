@@ -35,28 +35,28 @@ export function FlagsView({ showToast }: { showToast: (msg: string) => void }) {
 
   return (
     <div className="max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold text-[#E8EAF0]">Feature Flags</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Feature Flags</h1>
       
       {Object.entries(sections).map(([sectionTitle, keys]) => {
         const sectionKeys = keys.filter(k => k in flags);
         if (sectionKeys.length === 0) return null;
         return (
-          <div key={sectionTitle} className="bg-[#1C2340] border border-[#252E4A] rounded-xl overflow-hidden mb-6">
-            <div className="p-4 bg-[#13192B] border-b border-[#252E4A] text-sm font-bold text-white uppercase tracking-widest">{sectionTitle}</div>
+          <div key={sectionTitle} className="bg-slate-100 border border-slate-200 rounded-xl overflow-hidden mb-6">
+            <div className="p-4 bg-white border-b border-slate-200 text-sm font-bold text-white uppercase tracking-widest">{sectionTitle}</div>
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr>
-                  <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">FLAG NAME</th>
-                  <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">STATUS</th>
-                  <th className="p-4 border-b border-[#252E4A] text-[#6B7280] text-xs font-mono tracking-wider">ACTION</th>
+                  <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">FLAG NAME</th>
+                  <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">STATUS</th>
+                  <th className="p-4 border-b border-slate-200 text-slate-500 text-xs font-mono tracking-wider">ACTION</th>
                 </tr>
               </thead>
               <tbody>
                 {sectionKeys.map(key => (
-                  <tr key={key} className="border-b border-[#252E4A]">
-                    <td className="p-4 text-[#E8EAF0] font-mono text-sm">{key}</td>
+                  <tr key={key} className="border-b border-slate-200">
+                    <td className="p-4 text-slate-900 font-mono text-sm">{key}</td>
                     <td className="p-4">
-                      <span className={`text-xs font-bold px-2 py-1 rounded tracking-widest ${flags[key] ? 'bg-[#6EE7B7]/10 text-[#6EE7B7]' : 'bg-[#252E4A] text-[#6B7280]'}`}>
+                      <span className={`text-xs font-bold px-2 py-1 rounded tracking-widest ${flags[key] ? 'bg-primary/10 text-primary' : 'bg-[#252E4A] text-slate-500'}`}>
                         {flags[key] ? '● ON' : '● OFF'}
                       </span>
                     </td>
@@ -72,7 +72,7 @@ export function FlagsView({ showToast }: { showToast: (msg: string) => void }) {
       })}
 
       <div className="flex gap-4">
-        <input placeholder="New flag key..." value={newKey} onChange={e => setNewKey(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} className="bg-[#1C2340] border border-[#252E4A] rounded-lg px-4 py-2 text-white text-sm" />
+        <input placeholder="New flag key..." value={newKey} onChange={e => setNewKey(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} className="bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-white text-sm" />
         <button onClick={add} className="px-4 py-2 bg-[#252E4A] text-white text-sm font-medium rounded-lg hover:bg-[#252E4A]/80">Add Flag</button>
       </div>
     </div>
@@ -98,37 +98,37 @@ export function AnnouncementsView({ showToast }: { showToast: (msg: string) => v
 
   return (
     <div className="max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold text-[#E8EAF0]">Announcement Bar</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Announcement Bar</h1>
       
       {/* Live Preview */}
-      <h2 className="text-sm font-bold text-[#6B7280] uppercase tracking-widest">Live Preview</h2>
+      <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Live Preview</h2>
       {data.enabled ? (
          <div style={{ backgroundColor: data.bgColor, color: data.textColor }} className="text-xs sm:text-sm py-3 px-4 text-center font-bold tracking-wide uppercase rounded-lg">
            {data.emoji} {data.text} <span className="underline opacity-90 cursor-pointer pl-1">{data.linkText}</span>
          </div>
       ) : (
-        <div className="p-4 border border-[#252E4A] border-dashed rounded-lg text-[#6B7280] text-center text-sm">Bar is disabled</div>
+        <div className="p-4 border border-slate-200 border-dashed rounded-lg text-slate-500 text-center text-sm">Bar is disabled</div>
       )}
 
-      <div className="bg-[#1C2340] border border-[#252E4A] p-6 rounded-xl space-y-4">
+      <div className="bg-slate-100 border border-slate-200 p-6 rounded-xl space-y-4">
         <label className="flex items-center gap-2 text-white"><input type="checkbox" checked={data.enabled} onChange={e => setData({...data, enabled: e.target.checked})} /> Show Announcement Bar on website</label>
         
         <div className="grid grid-cols-5 gap-4 mt-4">
-          <div className="col-span-1 space-y-1"><label className="text-[#6B7280] text-xs">Emoji</label><input value={data.emoji} onChange={e => setData({...data, emoji: e.target.value})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white" /></div>
-          <div className="col-span-4 space-y-1"><label className="text-[#6B7280] text-xs">Message Text</label><input value={data.text} onChange={e => setData({...data, text: e.target.value})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white" /></div>
+          <div className="col-span-1 space-y-1"><label className="text-slate-500 text-xs">Emoji</label><input value={data.emoji} onChange={e => setData({...data, emoji: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
+          <div className="col-span-4 space-y-1"><label className="text-slate-500 text-xs">Message Text</label><input value={data.text} onChange={e => setData({...data, text: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1"><label className="text-[#6B7280] text-xs">Link URL</label><input value={data.linkUrl} onChange={e => setData({...data, linkUrl: e.target.value})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white" /></div>
-          <div className="space-y-1"><label className="text-[#6B7280] text-xs">Link Text</label><input value={data.linkText} onChange={e => setData({...data, linkText: e.target.value})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white" /></div>
+          <div className="space-y-1"><label className="text-slate-500 text-xs">Link URL</label><input value={data.linkUrl} onChange={e => setData({...data, linkUrl: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
+          <div className="space-y-1"><label className="text-slate-500 text-xs">Link Text</label><input value={data.linkText} onChange={e => setData({...data, linkText: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1"><label className="text-[#6B7280] text-xs">Background Color</label><input type="color" value={data.bgColor} onChange={e => setData({...data, bgColor: e.target.value})} className="w-full h-10 bg-[#13192B] border border-[#252E4A] rounded cursor-pointer" /></div>
-          <div className="space-y-1"><label className="text-[#6B7280] text-xs">Text Color</label><input type="color" value={data.textColor} onChange={e => setData({...data, textColor: e.target.value})} className="w-full h-10 bg-[#13192B] border border-[#252E4A] rounded cursor-pointer" /></div>
+          <div className="space-y-1"><label className="text-slate-500 text-xs">Background Color</label><input type="color" value={data.bgColor} onChange={e => setData({...data, bgColor: e.target.value})} className="w-full h-10 bg-white border border-slate-200 rounded cursor-pointer" /></div>
+          <div className="space-y-1"><label className="text-slate-500 text-xs">Text Color</label><input type="color" value={data.textColor} onChange={e => setData({...data, textColor: e.target.value})} className="w-full h-10 bg-white border border-slate-200 rounded cursor-pointer" /></div>
         </div>
 
-        <button onClick={save} className="w-full mt-4 py-3 bg-[#6EE7B7] text-[#0B0C14] font-bold rounded-lg hover:opacity-90 transition-opacity">Save Announcement</button>
+        <button onClick={save} className="w-full mt-4 py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-opacity">Save Announcement</button>
       </div>
     </div>
   );
@@ -156,24 +156,24 @@ export function SeoOverridesView({ showToast }: { showToast: (msg: string) => vo
 
   return (
     <div className="max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold text-[#E8EAF0]">SEO Overrides</h1>
-      <input placeholder="Search tools..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-[#1C2340] border border-[#252E4A] rounded-lg px-4 py-2 text-white" />
+      <h1 className="text-2xl font-bold text-slate-900">SEO Overrides</h1>
+      <input placeholder="Search tools..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-white" />
 
       <div className="space-y-4">
         {filtered.map(t => (
-          <div key={t.id} className="bg-[#1C2340] border border-[#252E4A] rounded-xl overflow-hidden">
-            <div className="p-4 flex justify-between items-center cursor-pointer hover:bg-[#13192B]" onClick={() => editing === t.id ? setEditing(null) : startEdit(t)}>
+          <div key={t.id} className="bg-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+            <div className="p-4 flex justify-between items-center cursor-pointer hover:bg-white" onClick={() => editing === t.id ? setEditing(null) : startEdit(t)}>
               <div>
-                <div className="font-bold text-[#E8EAF0]">{t.name}</div>
-                <div className="text-xs text-[#6B7280] font-mono mt-1">/tools/{t.slug} • {t.metaTitle || 'No title override'}</div>
+                <div className="font-bold text-slate-900">{t.name}</div>
+                <div className="text-xs text-slate-500 font-mono mt-1">/tools/{t.slug} • {t.metaTitle || 'No title override'}</div>
               </div>
-              <button className="text-[#6EE7B7] text-sm">{editing === t.id ? 'Close' : 'Edit'}</button>
+              <button className="text-primary text-sm">{editing === t.id ? 'Close' : 'Edit'}</button>
             </div>
             {editing === t.id && draft && (
-              <div className="p-4 border-t border-[#252E4A] bg-[#13192B] space-y-4">
-                <div className="space-y-1"><label className="text-[#6B7280] text-xs">Meta Title</label><input value={draft.metaTitle || ''} onChange={e => setDraft({...draft, metaTitle: e.target.value})} className="w-full bg-[#0B0C14] border border-[#252E4A] rounded p-2 text-white" /></div>
-                <div className="space-y-1"><label className="text-[#6B7280] text-xs">Meta Description</label><textarea value={draft.metaDesc || ''} onChange={e => setDraft({...draft, metaDesc: e.target.value})} className="w-full h-20 bg-[#0B0C14] border border-[#252E4A] rounded p-2 text-white" /></div>
-                <button onClick={save} className="px-4 py-2 bg-[#6EE7B7] text-[#0B0C14] font-bold text-sm rounded-lg hover:opacity-90">Save SEO Data</button>
+              <div className="p-4 border-t border-slate-200 bg-white space-y-4">
+                <div className="space-y-1"><label className="text-slate-500 text-xs">Meta Title</label><input value={draft.metaTitle || ''} onChange={e => setDraft({...draft, metaTitle: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded p-2 text-white" /></div>
+                <div className="space-y-1"><label className="text-slate-500 text-xs">Meta Description</label><textarea value={draft.metaDesc || ''} onChange={e => setDraft({...draft, metaDesc: e.target.value})} className="w-full h-20 bg-slate-50 border border-slate-200 rounded p-2 text-white" /></div>
+                <button onClick={save} className="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:opacity-90">Save SEO Data</button>
               </div>
             )}
           </div>
@@ -201,20 +201,20 @@ export function PlanConfigView({ showToast }: { showToast: (msg: string) => void
 
   return (
     <div className="max-w-4xl space-y-6">
-      <h1 className="text-2xl font-bold text-[#E8EAF0]">Plan Configuration</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Plan Configuration</h1>
       <div className="grid grid-cols-2 gap-6">
         {['free', 'pro'].map(tier => (
-          <div key={tier} className="bg-[#1C2340] border border-[#252E4A] p-6 rounded-xl space-y-4">
+          <div key={tier} className="bg-slate-100 border border-slate-200 p-6 rounded-xl space-y-4">
             <h2 className="text-lg font-bold text-white capitalize">{tier} Plan</h2>
-            <div className="space-y-1"><label className="text-[#6B7280] text-xs">AI Credits (Monthly)</label><input type="number" value={plans[tier].aiCredits || ''} onChange={e => setPlans({...plans, [tier]: {...plans[tier], aiCredits: parseInt(e.target.value)}})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white" /></div>
-            <div className="space-y-1"><label className="text-[#6B7280] text-xs">Invoice Limit</label><input type="number" value={plans[tier].invoiceLimit || ''} placeholder="Unlimited" onChange={e => setPlans({...plans, [tier]: {...plans[tier], invoiceLimit: parseInt(e.target.value) || null}})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white" /></div>
+            <div className="space-y-1"><label className="text-slate-500 text-xs">AI Credits (Monthly)</label><input type="number" value={plans[tier].aiCredits || ''} onChange={e => setPlans({...plans, [tier]: {...plans[tier], aiCredits: parseInt(e.target.value)}})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
+            <div className="space-y-1"><label className="text-slate-500 text-xs">Invoice Limit</label><input type="number" value={plans[tier].invoiceLimit || ''} placeholder="Unlimited" onChange={e => setPlans({...plans, [tier]: {...plans[tier], invoiceLimit: parseInt(e.target.value) || null}})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
             {tier === 'pro' && (
-              <div className="space-y-1"><label className="text-[#6B7280] text-xs">Monthly Price ($)</label><input type="number" value={plans[tier].priceMonthly || ''} onChange={e => setPlans({...plans, [tier]: {...plans[tier], priceMonthly: parseInt(e.target.value)}})} className="w-full bg-[#13192B] border border-[#252E4A] rounded p-2 text-white" /></div>
+              <div className="space-y-1"><label className="text-slate-500 text-xs">Monthly Price ($)</label><input type="number" value={plans[tier].priceMonthly || ''} onChange={e => setPlans({...plans, [tier]: {...plans[tier], priceMonthly: parseInt(e.target.value)}})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
             )}
           </div>
         ))}
       </div>
-      <button onClick={save} className="px-6 py-3 bg-[#6EE7B7] text-[#0B0C14] font-bold rounded-lg hover:opacity-90">Save Plan Limits</button>
+      <button onClick={save} className="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:opacity-90">Save Plan Limits</button>
     </div>
   );
 }

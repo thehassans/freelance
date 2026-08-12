@@ -108,12 +108,7 @@ export default function Navbar({
             className="flex items-center gap-3 group transition-all shrink-0 hover:opacity-90"
             id="nav-logo"
           >
-            <div className="bg-primary text-white p-2 rounded-xl shadow-lg shadow-primary/25 group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
-              <Briefcase className="w-5 h-5 md:w-6 md:h-6" />
-            </div>
-            <span className="text-xl md:text-2xl font-black tracking-tight text-slate-900">
-              Freelancer<span className="text-primary italic">Kit</span>
-            </span>
+            <img src="/freelancerkitlogo.png" alt="Freelancer Kit Logo" className="h-32 md:h-36 object-contain" />
           </button>
           
           {/* Desktop Navigation Engine */}
@@ -387,11 +382,11 @@ export default function Navbar({
                   onPricingClick();
                   navigate('/pricing');
                 }}
-                className="relative overflow-hidden px-7 py-2.5 rounded-2xl text-sm font-black shadow-xl transition-all group active:scale-95 bg-slate-900 text-white shadow-slate-900/10 hover:bg-slate-800"
+                className="relative overflow-hidden px-8 py-3 rounded-full text-sm font-black shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all group active:scale-95 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-white hover:shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:-translate-y-0.5 border border-amber-300/50"
               >
-                <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                <span className="relative flex items-center gap-2 text-white">
-                  <Sparkles size={16} className="text-amber-400" /> Upgrade to Pro
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:animate-[infinite-scroll_2s_linear_infinite]" />
+                <span className="relative flex items-center gap-2 text-white drop-shadow-md">
+                  <Sparkles size={18} className="text-amber-100 animate-pulse" /> Upgrade to Pro
                 </span>
               </button>
             )}
@@ -418,9 +413,9 @@ export default function Navbar({
              )}
              <button 
                onClick={onPricingClick}
-               className="p-2.5 text-primary bg-primary/5 rounded-xl active:scale-90 transition-all border border-primary/10"
+               className="p-2.5 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.3)] transition-all active:scale-90 bg-gradient-to-r from-amber-400 to-orange-500 text-white border border-amber-300/50"
              >
-                <Sparkles size={20} />
+                <Sparkles size={20} className="animate-pulse" />
              </button>
              <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

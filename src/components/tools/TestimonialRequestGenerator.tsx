@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Quote, Copy, Check, Loader2, Star, Sparkles, ChevronDown } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
+import { getGenAI } from '../../lib/gemini';
 import { usePremiumAction } from '../../hooks/usePremiumAction';
 import { DatabaseService } from '../../services/DatabaseService';
 import { toast } from 'sonner';
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export default function TestimonialRequestGenerator() {
   const [clientName, setClientName] = useState('');
@@ -24,6 +22,12 @@ export default function TestimonialRequestGenerator() {
     if (!clientName || !coreProblem || !keyMetric || !strategicBenefit) {
         toast.error('Please fill in all fields to generate the kit.');
         return;
+    }
+
+    const ai = getGenAI();
+    if (!ai) {
+      toast.error('GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY in your .env or .env.local file.');
+      return;
     }
     
     executeAction(async (userId) => {
@@ -51,7 +55,7 @@ export default function TestimonialRequestGenerator() {
         `;
 
         const response = await ai.models.generateContent({
-          model: "gemini-3-flash-preview",
+          model: "gemini-2.5-flash",
           contents: prompt,
         });
 

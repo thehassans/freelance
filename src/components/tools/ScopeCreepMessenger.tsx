@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, MessageSquare, Copy, Check, Send, ShieldAlert, BadgeDollarSign, Info, Loader2 } from 'lucide-react';
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { getGenAI } from '../../lib/gemini';
+import { toast } from 'sonner';
 
 export default function ScopeCreepMessenger() {
   const [situation, setSituation] = useState('');
@@ -15,6 +14,13 @@ export default function ScopeCreepMessenger() {
 
   const generateDraft = async () => {
     if (!situation) return;
+
+    const ai = getGenAI();
+    if (!ai) {
+      toast.error('GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY in your .env or .env.local file.');
+      return;
+    }
+
     setIsGenerating(true);
     
     try {
@@ -36,13 +42,14 @@ export default function ScopeCreepMessenger() {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: prompt,
       });
 
       setDraft(response.text || '');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Draft generation failed:', error);
+      toast.error(error?.message || 'Failed to generate response. Please check your Gemini API key.');
     } finally {
       setIsGenerating(false);
     }

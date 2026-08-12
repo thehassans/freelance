@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Send, Copy, FileText, Check, Loader2, Target, Trophy, Lightbulb, Globe, Palette, Trash2, Maximize2 } from 'lucide-react';
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getGenerativeAI } from '../../lib/gemini';
 import { useUser } from '../../contexts/UserContext';
 import { usePremiumAction } from '../../hooks/usePremiumAction';
 import { DatabaseService } from '../../services/DatabaseService';
@@ -10,8 +10,6 @@ import { historyService } from '../../lib/history-service';
 import { db, auth } from '../../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
-
-const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export default function PortfolioBuilder() {
   const { user, isPro, aiUsageCount, consumeCredit, showProModal } = useUser();
@@ -37,6 +35,12 @@ export default function PortfolioBuilder() {
 
   const generateCaseStudy = async () => {
     if (!projectNotes || !clientGoals) return;
+
+    const ai = getGenerativeAI();
+    if (!ai) {
+      toast.error('GEMINI_API_KEY is not configured. Please set GEMINI_API_KEY in your .env or .env.local file.');
+      return;
+    }
     
     executeAction(async (userId) => {
       setIsGenerating(true);
@@ -44,7 +48,7 @@ export default function PortfolioBuilder() {
       
       try {
         await DatabaseService.logToolUsage('portfolio-builder');
-        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
         const prompt = `
           Convert these project notes into a professional STAR format case study.
           

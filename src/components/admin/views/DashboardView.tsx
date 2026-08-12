@@ -66,7 +66,7 @@ export default function DashboardView() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-[#E8EAF0]">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
       
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -76,10 +76,10 @@ export default function DashboardView() {
           { label: 'Total Users', value: stats.totalUsers, sub: `${stats.proUsers} Pro accounts` },
           { label: 'Content Items', value: stats.totalBlogs, sub: `${stats.publishedBlogs} published` }
         ].map(stat => (
-          <div key={stat.label} className="bg-[#1C2340] border border-[#252E4A] p-6 rounded-xl">
-            <div className="text-[11px] font-mono text-[#6B7280] uppercase tracking-widest">{stat.label}</div>
+          <div key={stat.label} className="bg-slate-100 border border-slate-200 p-6 rounded-xl">
+            <div className="text-[11px] font-mono text-slate-500 uppercase tracking-widest">{stat.label}</div>
             <div className="text-4xl font-bold text-white mt-2 font-display">{stat.value}</div>
-            <div className="text-xs text-[#6EE7B7] mt-2">{stat.sub}</div>
+            <div className="text-xs text-primary mt-2">{stat.sub}</div>
           </div>
         ))}
       </div>
@@ -87,8 +87,8 @@ export default function DashboardView() {
       <div className="grid grid-cols-3 gap-8">
         <div className="col-span-2 space-y-8">
           {/* Chart */}
-          <div className="bg-[#1C2340] border border-[#252E4A] p-6 rounded-xl">
-            <h2 className="text-sm font-bold text-[#E8EAF0] mb-6">Tool Launches (Last 14 Days)</h2>
+          <div className="bg-slate-100 border border-slate-200 p-6 rounded-xl">
+            <h2 className="text-sm font-bold text-slate-900 mb-6">Tool Launches (Last 14 Days)</h2>
             <svg width="100%" viewBox={`0 0 ${W} ${H}`}>
               {chartData.map((d, i) => {
                 const barH = (d.count / maxChart) * 90;
@@ -104,47 +104,47 @@ export default function DashboardView() {
             </svg>
           </div>
 
-          <div className="bg-[#1C2340] border border-[#252E4A] p-6 rounded-xl">
-            <h2 className="text-sm font-bold text-[#E8EAF0] mb-4">Top Tools Today</h2>
+          <div className="bg-slate-100 border border-slate-200 p-6 rounded-xl">
+            <h2 className="text-sm font-bold text-slate-900 mb-4">Top Tools Today</h2>
             <div className="space-y-4">
               {topTools.map((t: any, i) => (
                 <div key={t[0]} className="flex justify-between text-sm">
-                  <span className="text-[#E8EAF0]">#{i + 1} · {t[0]}</span>
-                  <span className="text-[#6EE7B7] font-mono">{t[1]} launches</span>
+                  <span className="text-slate-900">#{i + 1} · {t[0]}</span>
+                  <span className="text-primary font-mono">{t[1]} launches</span>
                 </div>
               ))}
-              {topTools.length === 0 && <div className="text-sm text-[#6B7280]">No launches today</div>}
+              {topTools.length === 0 && <div className="text-sm text-slate-500">No launches today</div>}
             </div>
           </div>
         </div>
 
         <div className="space-y-8">
-          <div className="bg-[#1C2340] border border-[#252E4A] p-6 rounded-xl">
-            <h2 className="text-sm font-bold text-[#E8EAF0] mb-4">Live Feature Flags</h2>
+          <div className="bg-slate-100 border border-slate-200 p-6 rounded-xl">
+            <h2 className="text-sm font-bold text-slate-900 mb-4">Live Feature Flags</h2>
             <div className="space-y-3">
               {Object.entries(flags).slice(0, 8).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center bg-[#13192B] p-2 rounded">
-                  <span className="text-xs text-[#E8EAF0] truncate w-2/3">{key}</span>
+                <div key={key} className="flex justify-between items-center bg-white p-2 rounded">
+                  <span className="text-xs text-slate-900 truncate w-2/3">{key}</span>
                   <button 
                     onClick={() => toggleFlag(key)}
-                    className={`w-10 h-5 rounded-full relative transition-colors ${value ? 'bg-[#6EE7B7]' : 'bg-[#252E4A]'}`}
+                    className={`w-10 h-5 rounded-full relative transition-colors ${value ? 'bg-primary' : 'bg-[#252E4A]'}`}
                   >
-                    <div className={`w-3 h-3 rounded-full bg-[#13192B] absolute top-1 transition-all ${value ? 'right-1' : 'left-1'}`} />
+                    <div className={`w-3 h-3 rounded-full bg-white absolute top-1 transition-all ${value ? 'right-1' : 'left-1'}`} />
                   </button>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="bg-[#1C2340] border border-[#252E4A] p-6 rounded-xl">
-            <h2 className="text-sm font-bold text-[#E8EAF0] mb-4">Recent Activity</h2>
+          <div className="bg-slate-100 border border-slate-200 p-6 rounded-xl">
+            <h2 className="text-sm font-bold text-slate-900 mb-4">Recent Activity</h2>
             <div className="space-y-4 max-h-64 overflow-y-auto">
               {recentActivity.map((r: any, i) => (
                 <div key={i} className="text-xs flex gap-3">
-                  <span className="text-[#6B7280] font-mono shrink-0 whitespace-nowrap">
+                  <span className="text-slate-500 font-mono shrink-0 whitespace-nowrap">
                     {new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </span>
-                  <span className="text-[#E8EAF0] line-clamp-2">
+                  <span className="text-slate-900 line-clamp-2">
                     {r.type === 'tool_launch' ? `🔧 ${r.toolName} launched` : 
                      r.type === 'ai_call' ? `🤖 ${r.toolName} AI (${r.tokens} tokens)` :
                      `📌 ${JSON.stringify(r)}`}
