@@ -12,7 +12,7 @@ type Situation = 'proposal_followup' | 'overdue_invoice' | 'project_checkin' | '
 
 export default function FollowUpEmailGenerator() {
   const { isPro, aiUsageCount, consumeCredit, showProModal: showUserProModal, user } = useUser();
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('follow-up-gen');
   const [situation, setSituation] = useState<Situation>('proposal_followup');
   const [clientName, setClientName] = useState('');
   const [projectName, setProjectName] = useState('');

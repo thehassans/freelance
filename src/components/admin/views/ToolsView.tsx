@@ -21,8 +21,8 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
   return (
     <div className="fixed inset-y-0 right-0 w-[480px] bg-slate-100 border-l border-slate-200 shadow-2xl flex flex-col z-50">
       <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-white">
-        <h2 className="text-lg font-bold text-white">Edit Tool</h2>
-        <button onClick={onClose} className="text-slate-500 hover:text-white">✕</button>
+        <h2 className="text-lg font-bold text-slate-900">Edit Tool</h2>
+        <button onClick={onClose} className="text-slate-500 hover:text-slate-900">✕</button>
       </div>
 
       <div className="flex px-6 pt-4 gap-6 border-b border-slate-200 text-sm">
@@ -35,24 +35,24 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
       <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm">
         {tab === 'general' && (
           <>
-            <div className="space-y-1"><label className="text-slate-500">Name</label><input value={draft.name} onChange={e => setDraft({...draft, name: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
-            <div className="space-y-1"><label className="text-slate-500">Slug</label><input value={draft.slug} onChange={e => setDraft({...draft, slug: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white font-mono text-xs" /></div>
+            <div className="space-y-1"><label className="text-slate-500">Name</label><input value={draft.name} onChange={e => setDraft({...draft, name: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
+            <div className="space-y-1"><label className="text-slate-500">Slug</label><input value={draft.slug} onChange={e => setDraft({...draft, slug: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 font-mono text-xs" /></div>
             <div className="space-y-1"><label className="text-slate-500">Category</label>
-              <select value={draft.category} onChange={e => setDraft({...draft, category: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white">
+              <select value={draft.category} onChange={e => setDraft({...draft, category: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900">
                 {CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             <div className="space-y-1"><label className="text-slate-500">Tier</label>
               <div className="flex gap-4">
                 {['free', 'freemium', 'pro'].map(t => (
-                  <label key={t} className="flex items-center gap-2 text-white capitalize"><input type="radio" checked={draft.tier === t} onChange={() => setDraft({...draft, tier: t})} /> {t}</label>
+                  <label key={t} className="flex items-center gap-2 text-slate-700 capitalize"><input type="radio" checked={draft.tier === t} onChange={() => setDraft({...draft, tier: t})} /> {t}</label>
                 ))}
               </div>
             </div>
             <div className="space-y-1"><label className="text-slate-500">Status</label>
               <div className="flex gap-4 flex-wrap">
                 {['published', 'coming_soon', 'draft', 'disabled'].map(t => (
-                  <label key={t} className="flex items-center gap-2 text-white capitalize select-none cursor-pointer">
+                  <label key={t} className="flex items-center gap-2 text-slate-700 capitalize select-none cursor-pointer">
                     <input type="radio" checked={draft.status === t} onChange={() => setDraft({...draft, status: t})} /> 
                     {t === 'coming_soon' ? 'Coming Soon' : t}
                   </label>
@@ -60,13 +60,13 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1"><label className="text-slate-500">Sort Order</label><input type="number" value={draft.sortOrder || 0} onChange={e => setDraft({...draft, sortOrder: parseInt(e.target.value)})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
-              <div className="space-y-1"><label className="text-slate-500">Icon Emoji</label><input maxLength={3} value={draft.icon} onChange={e => setDraft({...draft, icon: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
+              <div className="space-y-1"><label className="text-slate-500">Sort Order</label><input type="number" value={draft.sortOrder || 0} onChange={e => setDraft({...draft, sortOrder: parseInt(e.target.value)})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
+              <div className="space-y-1"><label className="text-slate-500">Icon Emoji</label><input maxLength={3} value={draft.icon} onChange={e => setDraft({...draft, icon: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
             </div>
-            <div className="space-y-1"><label className="flex items-center gap-2 text-white"><input type="checkbox" checked={draft.isAI} onChange={e => setDraft({...draft, isAI: e.target.checked})} /> Is AI Powered</label></div>
-            <div className="space-y-1"><label className="text-slate-500">Description</label><textarea value={draft.description} onChange={e => setDraft({...draft, description: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white h-20" /></div>
+            <div className="space-y-1"><label className="flex items-center gap-2 text-slate-700"><input type="checkbox" checked={draft.isAI} onChange={e => setDraft({...draft, isAI: e.target.checked})} /> Is AI Powered</label></div>
+            <div className="space-y-1"><label className="text-slate-500">Description</label><textarea value={draft.description} onChange={e => setDraft({...draft, description: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 h-20" /></div>
             <div className="space-y-1 pt-1">
-              <label className="flex items-center gap-2 text-white cursor-pointer select-none">
+              <label className="flex items-center gap-2 text-slate-700 cursor-pointer select-none">
                 <input type="checkbox" checked={draft.trackNotifyClicks || false} onChange={e => setDraft({...draft, trackNotifyClicks: e.target.checked})} />
                 Track 'Notify Me' Clicks
               </label>
@@ -75,32 +75,32 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
         )}
         {tab === 'seo' && (
           <>
-            <div className="space-y-1"><label className="text-slate-500">Meta Title</label><input value={draft.metaTitle || ''} onChange={e => setDraft({...draft, metaTitle: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
-            <div className="space-y-1"><label className="text-slate-500">Meta Description</label><textarea value={draft.metaDesc || ''} onChange={e => setDraft({...draft, metaDesc: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white h-24" /></div>
+            <div className="space-y-1"><label className="text-slate-500">Meta Title</label><input value={draft.metaTitle || ''} onChange={e => setDraft({...draft, metaTitle: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
+            <div className="space-y-1"><label className="text-slate-500">Meta Description</label><textarea value={draft.metaDesc || ''} onChange={e => setDraft({...draft, metaDesc: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 h-24" /></div>
           </>
         )}
         {tab === 'pro' && (
           <div className="space-y-4">
             <div className="space-y-1 text-xs">
               <label className="text-slate-500 font-bold block mb-1">Free Usage Limit</label>
-              <input type="number" value={draft.freeLimit || ''} placeholder="Unlimited" onChange={e => setDraft({...draft, freeLimit: e.target.value ? parseInt(e.target.value) : null})} className="w-full bg-white border border-slate-200 rounded p-2 text-white font-mono" />
+              <input type="number" value={draft.freeLimit || ''} placeholder="Unlimited" onChange={e => setDraft({...draft, freeLimit: e.target.value ? parseInt(e.target.value) : null})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 font-mono" />
             </div>
 
             <div className="space-y-1 text-xs">
               <label className="text-slate-500 font-bold block mb-1">Token/Credit Custom Cost</label>
-              <input type="number" min={0} value={draft.creditCost !== undefined ? draft.creditCost : 1} placeholder="e.g., 5" onChange={e => setDraft({...draft, creditCost: e.target.value ? parseInt(e.target.value) : 0})} className="w-full bg-white border border-slate-200 rounded p-2 text-white font-mono" />
+              <input type="number" min={0} value={draft.creditCost !== undefined ? draft.creditCost : 1} placeholder="e.g., 5" onChange={e => setDraft({...draft, creditCost: e.target.value ? parseInt(e.target.value) : 0})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 font-mono" />
               <p className="text-[10px] text-slate-500 mt-0.5">Specify how many credits a single run of this tool costs a user.</p>
             </div>
 
             <div className="space-y-1 text-xs">
               <label className="text-slate-500 font-bold block mb-1">Daily Usage Rate Limit Capping</label>
-              <input type="number" min={0} value={draft.dailyRateLimit !== undefined ? draft.dailyRateLimit : ''} placeholder="Unlimited" onChange={e => setDraft({...draft, dailyRateLimit: e.target.value ? parseInt(e.target.value) : null})} className="w-full bg-white border border-slate-200 rounded p-2 text-white font-mono" />
+              <input type="number" min={0} value={draft.dailyRateLimit !== undefined ? draft.dailyRateLimit : ''} placeholder="Unlimited" onChange={e => setDraft({...draft, dailyRateLimit: e.target.value ? parseInt(e.target.value) : null})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 font-mono" />
               <p className="text-[10px] text-slate-500 mt-0.5">Allow maximum total requests per day across the platform for this tool.</p>
             </div>
 
             <div className="space-y-1 text-xs">
               <label className="text-slate-500 font-bold block mb-1">Custom Backend API Endpoint Field</label>
-              <input type="text" value={draft.apiEndpoint || ''} placeholder="e.g., /api/audit/wordpress" onChange={e => setDraft({...draft, apiEndpoint: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white font-mono text-[11px]" />
+              <input type="text" value={draft.apiEndpoint || ''} placeholder="e.g., /api/audit/wordpress" onChange={e => setDraft({...draft, apiEndpoint: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 font-mono text-[11px]" />
               <p className="text-[10px] text-slate-500 mt-0.5">Visually map your frontend tool to your target server route.</p>
             </div>
           </div>
@@ -108,7 +108,7 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
         {tab === 'ai' && draft.isAI && (
           <>
             <div className="space-y-1"><label className="text-[#818CF8]">AI Model</label>
-              <select value={draft.aiModel || 'claude-sonnet-4-20250514'} onChange={e => setDraft({...draft, aiModel: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white">
+              <select value={draft.aiModel || 'claude-sonnet-4-20250514'} onChange={e => setDraft({...draft, aiModel: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900">
                 <option value="claude-sonnet-4-20250514">Claude Sonnet 4 (Recommended)</option>
                 <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Faster, cheaper)</option>
               </select>
@@ -116,7 +116,7 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
             <div className="space-y-1"><label className="text-[#818CF8]">System Prompt</label><textarea value={draft.aiPrompt || ''} onChange={e => setDraft({...draft, aiPrompt: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 h-64 font-mono text-xs" /></div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1"><label className="text-[#818CF8]">Max Tokens</label><input type="range" min={100} max={4000} step={100} value={draft.aiMaxTokens || 1000} onChange={e => setDraft({...draft, aiMaxTokens: parseInt(e.target.value)})} className="w-full" /><div className="text-xs text-slate-900 mt-1">{draft.aiMaxTokens || 1000}</div></div>
-              <div className="space-y-1"><label className="text-[#818CF8]">Credits Per Use</label><input type="number" min={1} max={10} value={draft.aiCreditsPerUse || 1} onChange={e => setDraft({...draft, aiCreditsPerUse: parseInt(e.target.value)})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
+              <div className="space-y-1"><label className="text-[#818CF8]">Credits Per Use</label><input type="number" min={1} max={10} value={draft.aiCreditsPerUse || 1} onChange={e => setDraft({...draft, aiCreditsPerUse: parseInt(e.target.value)})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
             </div>
             <div className="text-slate-500 text-xs">
               Est. cost per call: ${((draft.aiMaxTokens || 1000) * 0.000003).toFixed(4)}
@@ -127,7 +127,7 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
       </div>
 
       <div className="p-6 border-t border-slate-200 bg-white flex justify-end gap-4">
-        <button onClick={onClose} className="px-4 py-2 text-slate-500 font-medium hover:text-white transition-colors">Cancel</button>
+        <button onClick={onClose} className="px-4 py-2 text-slate-500 font-medium hover:text-slate-900 transition-colors">Cancel</button>
         <button onClick={handleSave} className="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-opacity">Save Changes</button>
       </div>
     </div>
@@ -176,12 +176,12 @@ export default function ToolsView({ showToast }: { showToast: (msg: string, type
       </div>
 
       <div className="flex gap-4">
-        <input placeholder="Search tools..." value={search} onChange={e => setSearch(e.target.value)} className="bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-white text-sm w-64" />
-        <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-white text-sm">
+        <input placeholder="Search tools..." value={search} onChange={e => setSearch(e.target.value)} className="bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-slate-900 text-sm w-64" />
+        <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-slate-900 text-sm">
           <option>All</option>
           {CATEGORIES.map(c => <option key={c}>{c}</option>)}
         </select>
-        <select value={tierFilter} onChange={e => setTierFilter(e.target.value)} className="bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-white text-sm">
+        <select value={tierFilter} onChange={e => setTierFilter(e.target.value)} className="bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-slate-900 text-sm">
           <option>All</option>
           <option value="free">free</option>
           <option value="freemium">freemium</option>

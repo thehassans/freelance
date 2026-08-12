@@ -19,7 +19,7 @@ interface UserContextType {
   isPro: boolean;
   aiUsageCount: number;
   incrementAiUsage: () => void;
-  consumeCredit: () => Promise<boolean>;
+  consumeCredit: (toolIdOrCost?: string | number) => Promise<boolean>;
   showProModal: (featureName?: string) => void;
   closeProModal: () => void;
   isProModalOpen: boolean;
@@ -36,6 +36,9 @@ interface UserContextType {
   currency: string;
   updateCurrency: (currency: string) => void;
   updateProfile: (data: { name?: string; email?: string; currency?: string }) => Promise<void>;
+  aiCredits: number;
+  lastClaimDate: string;
+  claimDailyCredits: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -52,6 +55,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [isLeadCaptureOpen, setIsLeadCaptureOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [currency, setCurrencyState] = useState('USD');
+  const [aiCredits, setAiCredits] = useState(0);
+  const [lastClaimDate, setLastClaimDate] = useState('');
 
   const updateCurrency = (newCurrency: any) => {
     setCurrencyState(newCurrency);
@@ -88,16 +93,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           // Ensure profile exists
           const profileSnap = await getDoc(profileRef);
           if (!profileSnap.exists()) {
+            const today = new Date().toISOString().split('T')[0];
             await setDoc(profileRef, {
               email: firebaseUser.email,
               planTier: 'FREE',
               aiUsageCount: 0,
+              aiCredits: 100,
+              lastClaimDate: today,
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp()
             });
+            setAiCredits(100);
+            setLastClaimDate(today);
           } else {
             // Hydrate initial usage
             setAiUsageCount(profileSnap.data().aiUsageCount || 0);
+            setAiCredits(profileSnap.data().aiCredits ?? 100);
+            setLastClaimDate(profileSnap.data().lastClaimDate || '');
           }
 
           unsubscribeProfile = onSnapshot(profileRef, (snap) => {
@@ -105,6 +117,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               const data = snap.data();
               setTier(data.planTier || 'FREE');
               setAiUsageCount(data.aiUsageCount || 0);
+              setAiCredits(data.aiCredits ?? 100);
+              setLastClaimDate(data.lastClaimDate || '');
               if (data.currency) {
                 setCurrencyState(data.currency);
                 localStorage.setItem('user_currency', data.currency);
@@ -121,11 +135,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           // Default fallback
           setTier('FREE');
           setAiUsageCount(0);
+          setAiCredits(100);
+          setLastClaimDate('');
         }
       } else {
         setUser(null);
         setTier('FREE');
         setAiUsageCount(0);
+        setAiCredits(0);
+        setLastClaimDate('');
         if (unsubscribeProfile) unsubscribeProfile();
       }
       setLoading(false);
@@ -171,19 +189,72 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const { config } = useSystemConfigs();
 
-  const consumeCredit = async () => {
-    if (isPro) return true;
+  const claimDailyCredits = async () => {
+    if (!user?.uid) return;
+    const today = new Date().toISOString().split('T')[0];
+    if (lastClaimDate === today) {
+      toast.error('Already claimed today');
+      return;
+    }
+
+    if (isConfigValid) {
+      try {
+        const profileRef = doc(db, 'profiles', user.uid);
+        await updateDoc(profileRef, {
+          aiCredits: increment(30),
+          lastClaimDate: today,
+          updatedAt: serverTimestamp()
+        });
+        toast.success('Successfully claimed 30 daily credits!');
+      } catch (error) {
+        console.error("Failed to claim credits:", error);
+        toast.error('Failed to claim credits');
+      }
+    } else {
+      // Offline fallback
+      setAiCredits(prev => prev + 30);
+      setLastClaimDate(today);
+      toast.success('Successfully claimed 30 daily credits! (Offline mode)');
+    }
+  };
+
+  const consumeCredit = async (toolIdOrCost: string | number = 1) => {
+    let cost = typeof toolIdOrCost === 'number' ? toolIdOrCost : 1;
+    if (typeof toolIdOrCost === 'string') {
+      try {
+        const storedTools = JSON.parse(localStorage.getItem('fk_tools') || '[]');
+        const tool = storedTools.find((t: any) => t.id === toolIdOrCost);
+        if (tool && tool.aiCreditsPerUse) {
+          cost = tool.aiCreditsPerUse;
+        }
+      } catch (e) {}
+    }
+
+    if (isPro) return true; // Pro users might have unlimited or we still deduct? Let's still deduct but maybe they get more base credits? Prompt says: "each service have credit fees set in admin panel". Let's deduct from everyone except maybe if they are explicitly bypassing. Actually, let's always deduct credits unless they have a bypass.
+    
+    if (aiCredits < cost) {
+      toast.error(`Not enough credits. Required: ${cost}, Available: ${aiCredits}`);
+      return false;
+    }
     
     if (user?.uid) {
-      try {
-        const canDeduct = await DatabaseService.deductUserCredit(user.uid);
-        if (canDeduct) {
-          // If we want to optimistically update we could:
-          setAiUsageCount(prev => prev + 1);
+      if (isConfigValid) {
+        try {
+          const profileRef = doc(db, 'profiles', user.uid);
+          await updateDoc(profileRef, {
+            aiCredits: increment(-cost),
+            aiUsageCount: increment(1)
+          });
           return true;
+        } catch (error) {
+          console.error("Failed to consume credit:", error);
+          return false;
         }
-      } catch (e) {
-        console.error("Failed to deduct credit via DatabaseService:", e);
+      } else {
+        // Offline
+        setAiCredits(prev => prev - cost);
+        setAiUsageCount(prev => prev + 1);
+        return true;
       }
     } else {
       if (aiUsageCount < config.freemiumCreditLimit) {
@@ -286,7 +357,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       isHydrated,
       currency,
       updateCurrency,
-      updateProfile
+      updateProfile,
+      aiCredits,
+      lastClaimDate,
+      claimDailyCredits
     }}>
       {children}
     </UserContext.Provider>

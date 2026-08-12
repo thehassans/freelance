@@ -1933,6 +1933,44 @@ ${matches.map(m => `- **${m.updateName}** (Released: ${m.updateReleaseDate}) - V
     }, 1000);
   });
 
+  // API Route for Mailgun Admin Emails
+  app.post("/api/send-email", async (req, res) => {
+    const { to, subject, text, mailgunDomain, mailgunApiKey, mailgunSender } = req.body;
+
+    if (!to || !subject || !text || !mailgunDomain || !mailgunApiKey || !mailgunSender) {
+      return res.status(400).json({ error: "Missing required email parameters or Mailgun configuration." });
+    }
+
+    try {
+      const formData = new URLSearchParams();
+      formData.append("from", `FreelancerKit Admin <${mailgunSender}>`);
+      formData.append("to", to);
+      formData.append("subject", subject);
+      formData.append("text", text);
+
+      const response = await fetch(`https://api.mailgun.net/v3/${mailgunDomain}/messages`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${Buffer.from(`api:${mailgunApiKey}`).toString("base64")}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData.toString(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Mailgun API Error:", errorText);
+        return res.status(response.status).json({ error: `Mailgun API error: ${response.statusText}` });
+      }
+
+      const data = await response.json();
+      res.json({ success: true, message: "Email sent successfully", data });
+    } catch (error: any) {
+      console.error("Failed to send email:", error);
+      res.status(500).json({ error: "Failed to send email: " + error.message });
+    }
+  });
+
   // Stripe Checkout Session
   app.post("/api/create-checkout-session", async (req, res) => {
     const { userId, userEmail } = req.body;

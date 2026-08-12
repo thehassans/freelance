@@ -32,6 +32,16 @@ export default function AdminPINScreen({ onSuccess }: { onSuccess: () => void })
     if (email && String(pass) === String(savedPin)) {
       storage.set('fk_admin_attempts', { count: 0, lockoutUntil: 0 });
       sessionStorage.setItem('fk_admin_session', 'true');
+      
+      // Send login notification asynchronously
+      import('../../lib/email').then(({ sendAdminEmail }) => {
+        sendAdminEmail(
+          email, 
+          'Admin Login Alert - FreelancerKit', 
+          `A successful login to the FreelancerKit Admin Panel occurred at ${new Date().toISOString()}.\n\nIf this was not you, please secure your account immediately.`
+        ).catch(console.error);
+      });
+
       onSuccess();
     } else {
       setError(true);

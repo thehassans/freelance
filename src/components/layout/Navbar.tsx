@@ -37,7 +37,7 @@ export default function Navbar({
   onAuthClick: (mode: 'login' | 'signup') => void;
   onAllToolsClick: () => void;
 }) {
-  const { user, logout, tier, isPro, aiUsageCount, showProModal, isHydrated } = useUser();
+  const { user, logout, tier, isPro, aiUsageCount, showProModal, isHydrated, aiCredits, lastClaimDate, claimDailyCredits } = useUser();
   const navigate = useNavigate();
   const firstName = user?.name ? user.name.split(' ')[0] : 'Account';
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -323,20 +323,22 @@ export default function Navbar({
               </div>
             ) : (
               <>
-                {user && !isPro && (
-                  <button 
-                    onClick={() => showProModal('Unlimited AI Usage')}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-sm border ${
-                      aiUsageCount >= 5 
-                        ? 'bg-rose-50 text-rose-600 border-rose-100' 
-                        : aiUsageCount === 4 
-                        ? 'bg-amber-50 text-amber-600 border-amber-100' 
-                        : 'bg-slate-100 text-slate-600 border-slate-200'
-                    }`}
-                  >
-                    <Zap size={12} className={aiUsageCount >= 4 ? 'animate-pulse' : ''} />
-                    {aiUsageCount >= 5 ? '0 Credits' : `${5 - aiUsageCount} Free Credits`}
-                  </button>
+                {user && (
+                  <div className="flex items-center gap-2">
+                    {lastClaimDate !== new Date().toISOString().split('T')[0] && (
+                      <button 
+                        onClick={claimDailyCredits}
+                        className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors animate-pulse"
+                      >
+                        <Sparkles size={14} />
+                        Claim 30 Credits
+                      </button>
+                    )}
+                    <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold font-mono">
+                      <Zap size={14} className="text-primary" />
+                      {aiCredits} Credits
+                    </div>
+                  </div>
                 )}
 
                 {user ? (

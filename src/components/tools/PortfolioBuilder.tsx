@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 export default function PortfolioBuilder() {
   const { user, isPro, aiUsageCount, consumeCredit, showProModal } = useUser();
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('portfolio-builder');
   const [projectNotes, setProjectNotes] = useState('');
   const [clientGoals, setClientGoals] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);

@@ -14,7 +14,7 @@ export default function TestimonialRequestGenerator() {
 
   const [drafts, setDrafts] = useState<{ emailScript: string, option1: string, option2: string, option3: string } | null>(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('testimonial-gen');
 
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 

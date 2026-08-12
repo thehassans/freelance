@@ -63,7 +63,7 @@ const GEOGRAPHIC_SCOPES = [
 ];
 
 export default function BreachCalculator() {
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('breach-calculator');
   
   const [industry, setIndustry] = useState(INDUSTRIES[0]);
   const [businessSize, setBusinessSize] = useState(BUSINESS_SIZES[0]);

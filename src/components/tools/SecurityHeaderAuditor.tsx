@@ -34,7 +34,7 @@ export default function SecurityHeaderAuditor() {
   const [auditData, setAuditData] = useState<AuditReportPayload | null>(null);
   const [loadingStep, setLoadingStep] = useState(0);
   
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('http-security-auditor');
   
   const loadingMessages = [
     'Resolving DNS Configuration...',

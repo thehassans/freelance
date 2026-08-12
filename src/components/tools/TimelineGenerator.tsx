@@ -30,7 +30,7 @@ const TRACK_COLORS: Record<Track, string> = {
 export default function TimelineGenerator() {
   const navigate = useNavigate();
   const setProposalPayload = useEcosystemStore((state) => state.setProposalPayload);
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('timeline-generator');
   const [kickoffDate, setKickoffDate] = useState(new Date().toISOString().split('T')[0]);
   const [tasks, setTasks] = useState<Task[]>([
     { id: '1', name: 'Discovery & Research', startWeek: 0, duration: 2, color: TRACK_COLORS.Strategy, track: 'Strategy', requiresApproval: false },

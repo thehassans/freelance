@@ -3,8 +3,8 @@ import { useUser } from '../contexts/UserContext';
 import { DatabaseService } from '../services/DatabaseService';
 import { toast } from 'sonner';
 
-export function usePremiumAction() {
-  const { user, isPro, aiUsageCount, showAuthModal, showProModal } = useUser();
+export function usePremiumAction(toolId?: string) {
+  const { user, isPro, aiUsageCount, showAuthModal, showProModal, consumeCredit } = useUser();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const executeAction = async <T,>(actionCallback: (userId: string) => Promise<T> | T): Promise<T | undefined> => {
@@ -21,9 +21,11 @@ export function usePremiumAction() {
 
     setIsProcessing(true);
     try {
-      // Execute deductUserCredit before running action
-      if (!isPro) {
-        await DatabaseService.deductUserCredit(user.uid);
+      // Execute consumeCredit before running action
+      const success = await consumeCredit(toolId);
+      if (!success) {
+        // consumeCredit already handles toast and pro logic
+        return;
       }
       
       const result = await actionCallback(user.uid);

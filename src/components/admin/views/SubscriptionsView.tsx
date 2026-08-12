@@ -111,7 +111,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
     <div className="max-w-6xl space-y-6">
       <div className="flex justify-between items-center bg-white border border-slate-200/60 p-5 rounded-2xl">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Subscriptions Panel</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Subscriptions Panel</h1>
           <p className="text-xs text-slate-500">Manage user payment profiles, plan tiers, and Stripe customer linking.</p>
         </div>
         <button 
@@ -128,7 +128,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
         <div className="bg-slate-100 border border-slate-200 p-6 rounded-2xl relative overflow-hidden shadow-md">
           <span className="absolute -right-3 -bottom-3 text-indigo-500/10"><CreditCard size={100} /></span>
           <div className="text-[11px] font-mono text-slate-500 uppercase tracking-wider font-extrabold">Total Monthly Recurring Revenue (MRR)</div>
-          <div className="text-4xl font-black text-white mt-3 tracking-tight">${mrr.toLocaleString()}</div>
+          <div className="text-4xl font-black text-slate-900 mt-3 tracking-tight">${mrr.toLocaleString()}</div>
           <div className="text-xs text-primary mt-1.5 flex items-center gap-1 font-semibold">
             <ShieldCheck size={14} />
             Live recurring revenue run-rate
@@ -138,7 +138,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
         <div className="bg-slate-100 border border-slate-200 p-6 rounded-2xl relative overflow-hidden shadow-md">
           <span className="absolute -right-3 -bottom-3 text-emerald-500/10"><Award size={100} /></span>
           <div className="text-[11px] font-mono text-slate-500 uppercase tracking-wider font-extrabold">Active Subscribers</div>
-          <div className="text-4xl font-black text-white mt-3 tracking-tight">{activeCount}</div>
+          <div className="text-4xl font-black text-slate-900 mt-3 tracking-tight">{activeCount}</div>
           <div className="text-xs text-slate-500 mt-1.5 flex items-center gap-1 font-semibold">
             Premium seats online
           </div>
@@ -147,7 +147,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
         <div className="bg-slate-100 border border-slate-200 p-6 rounded-2xl relative overflow-hidden shadow-md">
           <span className="absolute -right-3 -bottom-3 text-rose-500/10"><ArrowUpRight size={100} className="rotate-45" /></span>
           <div className="text-[11px] font-mono text-slate-500 uppercase tracking-wider font-extrabold">Churn Rate %</div>
-          <div className="text-4xl font-black text-white mt-3 tracking-tight">{churnRatePct}%</div>
+          <div className="text-4xl font-black text-slate-900 mt-3 tracking-tight">{churnRatePct}%</div>
           <div className="text-xs text-rose-400 mt-1.5 flex items-center gap-1 font-semibold">
             Monthly cancellations ratio
           </div>
@@ -180,7 +180,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
                   return (
                     <tr key={sub.id} className="border-b border-slate-200 hover:bg-[#252E4A]/30 transition-all">
                       <td className="p-4">
-                        <div className="text-white text-sm font-bold flex items-center gap-1.5">
+                        <div className="text-slate-900 text-sm font-bold flex items-center gap-1.5">
                           {sub.userName}
                         </div>
                         <div className="text-slate-500 text-xs flex items-center gap-1 mt-0.5">
@@ -253,7 +253,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
           <div className="bg-slate-100 border border-slate-200 w-full max-w-md rounded-2xl overflow-hidden shadow-2xl p-6 relative">
-            <h3 className="text-lg font-black text-white mb-4">Add Subscriber Profile</h3>
+            <h3 className="text-lg font-black text-slate-900 mb-4">Add Subscriber Profile</h3>
             <form onSubmit={handleCreateSub} className="space-y-4">
               <div className="space-y-1">
                 <label className="text-xs text-slate-500 font-bold">User Full Name</label>
@@ -263,7 +263,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
                   placeholder="e.g. Rachel Adams"
                   value={newSub.userName}
                   onChange={e => setNewSub({...newSub, userName: e.target.value})}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-white text-sm outline-none focus:border-indigo-500 transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 text-sm outline-none focus:border-indigo-500 transition-all"
                 />
               </div>
 
@@ -275,7 +275,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
                   placeholder="e.g. rachel@domain.com"
                   value={newSub.email}
                   onChange={e => setNewSub({...newSub, email: e.target.value})}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-white text-sm outline-none focus:border-indigo-500 transition-all"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 text-sm outline-none focus:border-indigo-500 transition-all"
                 />
               </div>
 
@@ -288,7 +288,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
                       const amount = e.target.value === 'Lifetime' ? 199 : e.target.value.includes('Annual') ? 79 : 9;
                       setNewSub({...newSub, plan: e.target.value, amount});
                     }}
-                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-white text-sm outline-none"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 text-sm outline-none"
                   >
                     <option value="Pro Monthly">Pro Monthly</option>
                     <option value="Pro Annual">Pro Annual</option>
@@ -303,7 +303,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
                     required
                     value={newSub.amount}
                     onChange={e => setNewSub({...newSub, amount: parseInt(e.target.value) || 0})}
-                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-white text-sm outline-none font-mono"
+                    className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 text-sm outline-none font-mono"
                   />
                 </div>
               </div>
@@ -313,7 +313,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
                 <select 
                   value={newSub.status}
                   onChange={e => setNewSub({...newSub, status: e.target.value})}
-                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-white text-sm outline-none"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-slate-900 text-sm outline-none"
                 >
                   <option value="active">Active</option>
                   <option value="past_due">Past Due</option>
@@ -325,7 +325,7 @@ export default function SubscriptionsView({ showToast }: { showToast: (msg: stri
                 <button 
                   type="button" 
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2.5 bg-transparent hover:bg-white/5 border border-slate-200 text-slate-500 hover:text-white font-bold text-xs rounded-xl"
+                  className="px-4 py-2.5 bg-transparent hover:bg-white/5 border border-slate-200 text-slate-500 hover:text-slate-900 font-bold text-xs rounded-xl"
                 >
                   Cancel
                 </button>

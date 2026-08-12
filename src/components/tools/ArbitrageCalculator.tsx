@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 export default function ArbitrageCalculator() {
   const { config, loading } = useSystemConfigs();
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('platform-arbitrage');
   const [clientRevenue, setClientRevenue] = useState<number | string>("");
   const [inboundFee, setInboundFee] = useState<number | string>("");
   const [subcontractorCost, setSubcontractorCost] = useState<number | string>("");

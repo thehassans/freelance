@@ -300,7 +300,7 @@ import { DatabaseService } from '../../services/DatabaseService';
 
 export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: () => void }) {
   const { user, isPro } = useUser();
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('invoice-gen');
   const { requirePro } = useFeatureGate();
   const location = useLocation();
 

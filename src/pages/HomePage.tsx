@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, ArrowRight, FileText, Zap, Globe, Rocket, Clock, MousePointer2, Shield } from 'lucide-react';
+import { Sparkles, ArrowRight, FileText, Zap, Globe, Rocket, Clock, MousePointer2, Shield, TrendingUp, Briefcase, Receipt } from 'lucide-react';
 import FeaturedTools from '../components/layout/FeaturedTools';
 import ProfessionalSolutions from '../components/layout/ProfessionalSolutions';
 import InstantExperience from '../components/layout/InstantExperience';
@@ -121,7 +121,7 @@ export default function HomePage({ onToolClick, onExploreTools, onProClick, onWo
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-sm text-blue-600 tracking-wider font-bold uppercase"
+              className="text-sm text-sky-500 tracking-wider font-bold uppercase"
             >
               TRUSTED BY 5,000+ INDEPENDENT AGENCIES
             </motion.div>
@@ -130,10 +130,10 @@ export default function HomePage({ onToolClick, onExploreTools, onProClick, onWo
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5, ease: "easeOut" }}
-              className="text-5xl lg:text-7xl font-extrabold text-slate-900 leading-tight tracking-tight"
+              className="text-5xl lg:text-7xl font-extrabold text-slate-800 leading-tight tracking-tight"
             >
               Automate your agency. <br />
-              <span className="text-[#0f4c75]">Protect your margins.</span>
+              <span className="bg-gradient-to-r from-sky-400 to-sky-600 bg-clip-text text-transparent drop-shadow-sm">Protect your margins.</span>
             </motion.h1>
             
             <motion.p 
@@ -159,7 +159,7 @@ export default function HomePage({ onToolClick, onExploreTools, onProClick, onWo
                     damping: 30
                   }}
                   onClick={onExploreTools}
-                  className="w-full sm:w-auto px-8 py-4 bg-[#0f4c75] text-white rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-[#0f4c75]/20 flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-sky-400 to-sky-500 hover:from-sky-500 hover:to-sky-600 text-white rounded-xl font-bold uppercase tracking-widest text-xs shadow-lg shadow-sky-500/20 flex items-center justify-center gap-2 transition-all"
                 >
                   Explore the Toolkit <ArrowRight size={14} />
                 </motion.button>
@@ -175,13 +175,13 @@ export default function HomePage({ onToolClick, onExploreTools, onProClick, onWo
                     damping: 30
                   }}
                   onClick={onProClick}
-                  className="w-full sm:w-auto px-8 py-4 bg-transparent border border-[#0f4c75] text-[#0f4c75] rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-[#0f4c75]/5 transition-all shadow-sm"
+                  className="w-full sm:w-auto px-8 py-4 bg-sky-50/50 border border-sky-200 text-sky-600 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-sky-50 transition-all shadow-sm"
                 >
                   View Pro Features
                 </motion.button>
               </div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center sm:text-left pl-1">
-                No credit card required. <span className="text-blue-600">5 Free Credits.</span>
+                No credit card required. <span className="text-sky-500">5 Free Credits.</span>
               </p>
             </div>
 
@@ -223,14 +223,61 @@ export default function HomePage({ onToolClick, onExploreTools, onProClick, onWo
                   <div className="w-8 h-8 rounded-lg bg-slate-50" />
                 </div>
                 
-                <div className="space-y-4">
-                  <div className="h-4 w-1/3 bg-slate-50 rounded-full" />
-                  <div className="h-10 w-full bg-slate-50 rounded-2xl" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="h-24 bg-slate-50 rounded-2xl" />
-                    <div className="h-24 bg-slate-50 rounded-2xl" />
+                <div className="space-y-4 font-sans">
+                  {/* Mock UI Header */}
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800">Revenue Overview</h4>
+                      <p className="text-[10px] text-slate-400 font-medium">Last 30 Days</p>
+                    </div>
+                    <div className="text-right">
+                      <h4 className="text-lg font-black text-sky-500">$24,500</h4>
+                      <p className="text-[10px] text-emerald-500 font-bold flex items-center justify-end gap-1"><TrendingUp size={10} /> +14.5%</p>
+                    </div>
                   </div>
-                  <div className="h-32 w-full bg-slate-50 rounded-2xl" />
+                  
+                  {/* Mock Chart Area */}
+                  <div className="relative h-28 w-full bg-gradient-to-t from-sky-50/50 to-transparent rounded-xl border border-sky-100/30 flex items-end px-2 pt-4">
+                     <svg className="w-full h-full drop-shadow-sm" viewBox="0 0 100 40" preserveAspectRatio="none">
+                       <path d="M0 40 L0 30 Q10 25, 20 28 T40 20 T60 15 T80 20 T100 5 L100 40 Z" fill="url(#skyGradient)" opacity="0.3" />
+                       <path d="M0 30 Q10 25, 20 28 T40 20 T60 15 T80 20 T100 5" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" />
+                       <defs>
+                         <linearGradient id="skyGradient" x1="0" y1="0" x2="0" y2="1">
+                           <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.8" />
+                           <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+                         </linearGradient>
+                       </defs>
+                     </svg>
+                  </div>
+                  
+                  {/* Data Cards */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100/50">
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Active Projects</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-black text-slate-700">12</span>
+                        <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-500 flex items-center justify-center"><Briefcase size={12}/></div>
+                      </div>
+                    </div>
+                    <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100/50">
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Invoices Due</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-black text-slate-700">3</span>
+                        <div className="w-6 h-6 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center"><Receipt size={12}/></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+                     <div className="flex justify-between items-center mb-2">
+                       <span className="text-[10px] font-bold text-slate-600">Monthly Target</span>
+                       <span className="text-[10px] font-bold text-sky-500">82%</span>
+                     </div>
+                     <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                       <div className="h-full bg-gradient-to-r from-sky-400 to-sky-500 w-[82%] rounded-full shadow-[inset_0_-2px_4px_rgba(0,0,0,0.1)]" />
+                     </div>
+                  </div>
                 </div>
               </div>
 
@@ -254,11 +301,11 @@ export default function HomePage({ onToolClick, onExploreTools, onProClick, onWo
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                 className="absolute top-1/2 -left-12 -translate-y-1/2 bg-white rounded-2xl shadow-xl border border-slate-50 p-4 flex items-center gap-3 z-20 whitespace-nowrap"
               >
-                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-sky-50 text-sky-500 flex items-center justify-center">
                   <Rocket size={16} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Invoice Paid - $4,200</p>
+                  <p className="text-[10px] font-black text-sky-500 uppercase tracking-widest">Invoice Paid - $4,200</p>
                   <p className="text-[8px] text-slate-400 font-bold">Successfully processed</p>
                 </div>
               </motion.div>
@@ -279,8 +326,8 @@ export default function HomePage({ onToolClick, onExploreTools, onProClick, onWo
             </motion.div>
 
             {/* Decorative blurs */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl -z-10" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#0f4c75]/10 rounded-full blur-2xl -z-10" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-sky-400/20 rounded-full blur-3xl -z-10" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-sky-300/10 rounded-full blur-2xl -z-10" />
           </div>
         </div>
       </section>

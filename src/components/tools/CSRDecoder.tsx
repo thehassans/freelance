@@ -46,7 +46,7 @@ const LOADING_TEXTS = [
 ];
 
 export default function CSRDecoder() {
-  const { executeAction, isProcessing: isPremiumProcessing } = usePremiumAction();
+  const { executeAction, isProcessing: isPremiumProcessing } = usePremiumAction('csr-decoder');
   
   const [state, setState] = useState<ToolState>('idle');
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);

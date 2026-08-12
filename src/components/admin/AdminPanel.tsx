@@ -52,9 +52,9 @@ export default function AdminPanel({ view, setView, onExit }: { view: string, se
   return (
     <div className="fixed inset-0 z-[9999] bg-slate-50 text-slate-900 flex flex-col font-sans overflow-hidden">
       {/* TopBar */}
-      <div className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0">
+      <div className="h-24 border-b border-slate-200 bg-white flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-4">
-          <img src="/freelancerkitlogo.png" alt="Freelancer Kit Logo" className="h-8 object-contain" />
+          <img src="/freelancerkitlogo.png" alt="Freelancer Kit Logo" className="h-20 object-contain" />
         </div>
         <div className="flex items-center gap-4">
           <button onClick={onExit} className="text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors">

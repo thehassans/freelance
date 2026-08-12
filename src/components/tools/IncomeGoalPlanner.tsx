@@ -65,7 +65,7 @@ export default function IncomeGoalPlanner() {
         showProModal('Unlimited Goal Exports');
         return;
       }
-      const success = await consumeCredit();
+      const success = await consumeCredit('income-goal-planner');
       if (!success) return;
       toast.success('1 Credit Used: Strategy Roadmap Exported');
     } else {

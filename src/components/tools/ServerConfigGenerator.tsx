@@ -189,7 +189,7 @@ const FAQItem = ({ question, answer }: FAQItemProps) => {
 };
 
 export default function ServerConfigGenerator() {
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('server-config');
 
   const [state, setState] = useState<ConfigState>({
     serverSoftware: 'nginx',

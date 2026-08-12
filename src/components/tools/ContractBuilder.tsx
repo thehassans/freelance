@@ -32,7 +32,7 @@ const faqItems = [
 
 export default function ContractBuilder({ onPricingClick }: { onPricingClick?: () => void }) {
   const { isPro, user, showAuthModal } = useUser();
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('contract-builder');
   const contractRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [template, setTemplate] = useState<Template>('service');

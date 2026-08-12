@@ -32,7 +32,7 @@ const decodeData = (hash: string) => {
 };
 
 export default function AssetVault() {
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('asset-vault');
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   
   // 1. STATE MANAGEMENT

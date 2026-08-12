@@ -23,7 +23,7 @@ import FreemiumExportWrapper from '../common/FreemiumExportWrapper';
 import { toast } from 'sonner';
 
 export default function BacklinkAuditor() {
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('backlink-auditor');
   const [domain, setDomain] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<LiveBacklinkReport | null>(null);

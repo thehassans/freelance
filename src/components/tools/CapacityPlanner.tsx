@@ -44,7 +44,7 @@ const ROLES = [
 
 export default function CapacityPlanner() {
   const { user, isPro } = useUser();
-  const { executeAction } = usePremiumAction();
+  const { executeAction } = usePremiumAction('capacity-planner');
   
   // Basic State
   const [timeHorizon, setTimeHorizon] = useState<'Weekly' | 'Monthly'>('Weekly');

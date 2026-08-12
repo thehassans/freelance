@@ -122,7 +122,7 @@ const AccordionItem = ({ question, answer }: { question: string; answer: string 
 };
 
 export default function SSLChecker() {
-  const { executeAction, isProcessing: isPremiumProcessing } = usePremiumAction();
+  const { executeAction, isProcessing: isPremiumProcessing } = usePremiumAction('ssl-checker');
   
   const [url, setUrl] = useState('');
   const [state, setState] = useState<ToolState>('idle');

@@ -6,6 +6,10 @@ export default function SettingsView({ showToast }: { showToast: (msg: string) =
   const [announcement, setAnnouncement] = useState(() => storage.get('fk_announcement') || {
     enabled: true, emoji: '🚀', text: 'JUST LAUNCHED: THE NEW AGENCY CAPACITY PLANNER.', linkText: 'Explore the tool →', linkUrl: '/tools/capacity-planner', bgColor: '#1e3a5f', textColor: '#ffffff'
   });
+  
+  const [mailgun, setMailgun] = useState(() => storage.get('fk_mailgun_config') || {
+    domain: '', apiKey: '', senderEmail: ''
+  });
 
   useEffect(() => {
     setPin(storage.get('fk_admin_pin') || '2611');
@@ -19,6 +23,30 @@ export default function SettingsView({ showToast }: { showToast: (msg: string) =
   const saveAnnouncement = () => {
     storage.set('fk_announcement', announcement);
     showToast('Announcement saved');
+  };
+
+  const saveMailgun = () => {
+    storage.set('fk_mailgun_config', mailgun);
+    showToast('Mailgun config saved');
+  };
+
+  const sendTestEmail = async () => {
+    if (!mailgun.domain || !mailgun.apiKey || !mailgun.senderEmail) {
+      showToast('Please fill out all Mailgun settings first');
+      return;
+    }
+    showToast('Sending test email...');
+    try {
+      const { sendAdminEmail } = await import('../../../lib/email');
+      const result = await sendAdminEmail('test@example.com', 'Test Email from FreelancerKit Admin', 'This is a test email to verify your Mailgun SMTP settings are working correctly.');
+      if (result.success) {
+        showToast('Test email sent successfully!');
+      } else {
+        showToast('Failed to send: ' + (result.error || 'Unknown error'));
+      }
+    } catch (e: any) {
+      showToast('Error: ' + e.message);
+    }
   };
 
   const clearAnalytics = () => {
@@ -87,7 +115,7 @@ export default function SettingsView({ showToast }: { showToast: (msg: string) =
               <div className="space-y-1 flex-1">
                 <label className="text-slate-500 text-xs">Admin PIN</label>
                 <div className="relative">
-                   <input value={pin} onChange={e => setPin(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))} type="password" placeholder="4 digits" className="w-full bg-white border border-slate-200 rounded p-2 text-white placeholder-[#6B7280]" />
+                   <input value={pin} onChange={e => setPin(e.target.value.replace(/[^0-9]/g, '').slice(0, 4))} type="password" placeholder="4 digits" className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 placeholder-[#6B7280]" />
                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">••••</div>
                 </div>
               </div>
@@ -95,7 +123,7 @@ export default function SettingsView({ showToast }: { showToast: (msg: string) =
             </div>
             <div className="space-y-1">
                <label className="text-slate-500 text-xs">Session timeout</label>
-               <select className="w-full bg-white border border-slate-200 rounded p-2 text-white">
+               <select className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900">
                  <option>24 Hours</option>
                  <option>8 Hours</option>
                  <option>4 Hours</option>
@@ -108,10 +136,10 @@ export default function SettingsView({ showToast }: { showToast: (msg: string) =
           <div className="bg-slate-100 border border-slate-200 p-6 rounded-xl space-y-4">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Platform Identity</h2>
             <div className="space-y-3">
-              <div className="space-y-1"><label className="text-slate-500 text-xs">Site name</label><input defaultValue="FreelancerKit" className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
-              <div className="space-y-1"><label className="text-slate-500 text-xs">Tagline</label><input defaultValue="The Command Center for Freelancers" className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
-              <div className="space-y-1"><label className="text-slate-500 text-xs">Support email</label><input defaultValue="hello@freelancerkit.io" className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
-              <div className="space-y-1"><label className="text-slate-500 text-xs">Site URL</label><input defaultValue="https://freelancerkit.io" className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
+              <div className="space-y-1"><label className="text-slate-500 text-xs">Site name</label><input defaultValue="FreelancerKit" className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
+              <div className="space-y-1"><label className="text-slate-500 text-xs">Tagline</label><input defaultValue="The Command Center for Freelancers" className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
+              <div className="space-y-1"><label className="text-slate-500 text-xs">Support email</label><input defaultValue="hello@freelancerkit.io" className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
+              <div className="space-y-1"><label className="text-slate-500 text-xs">Site URL</label><input defaultValue="https://freelancerkit.io" className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
             </div>
             <button className="px-4 py-2 bg-primary text-white text-sm font-bold rounded mt-2">Save Identity</button>
           </div>
@@ -126,18 +154,41 @@ export default function SettingsView({ showToast }: { showToast: (msg: string) =
                   <button className="text-xs text-primary">Test Connection</button>
                 </div>
                 <div className="flex gap-2">
-                  <input type="password" value="sk-ant-••••••••••••••••" readOnly className="flex-1 bg-white border border-slate-200 rounded p-2 text-white" />
+                  <input type="password" value="sk-ant-••••••••••••••••" readOnly className="flex-1 bg-white border border-slate-200 rounded p-2 text-slate-900" />
                   <button className="px-3 bg-[#252E4A] rounded text-slate-900 text-xs">Reveal</button>
                 </div>
               </div>
               <div className="space-y-1">
                 <label className="text-slate-500 text-xs">Stripe Publishable Key</label>
-                <input type="password" value="pk_live_••••••" readOnly className="w-full bg-white border border-slate-200 rounded p-2 text-white" />
+                <input type="password" value="pk_live_••••••" readOnly className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" />
               </div>
               <div className="space-y-1">
                 <label className="text-slate-500 text-xs">Monthly AI Budget Cap ($)</label>
-                <input type="number" defaultValue={50} className="w-full bg-white border border-slate-200 rounded p-2 text-white" />
+                <input type="number" defaultValue={50} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" />
               </div>
+            </div>
+          </div>
+
+          {/* Mailgun SMTP Settings */}
+          <div className="bg-slate-100 border border-slate-200 p-6 rounded-xl space-y-4">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Mailgun SMTP Configuration</h2>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-slate-500 text-xs">Mailgun Domain</label>
+                <input type="text" value={mailgun.domain} onChange={e => setMailgun({...mailgun, domain: e.target.value})} placeholder="e.g., mg.yourdomain.com" className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-slate-500 text-xs">Mailgun Private API Key</label>
+                <input type="password" value={mailgun.apiKey} onChange={e => setMailgun({...mailgun, apiKey: e.target.value})} placeholder="key-..." className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-slate-500 text-xs">Default Sender Email</label>
+                <input type="email" value={mailgun.senderEmail} onChange={e => setMailgun({...mailgun, senderEmail: e.target.value})} placeholder="noreply@yourdomain.com" className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" />
+              </div>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button onClick={saveMailgun} className="px-4 py-2 bg-primary text-white text-sm font-bold rounded">Save Config</button>
+              <button onClick={sendTestEmail} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded hover:bg-slate-50">Send Test Email</button>
             </div>
           </div>
         </div>
@@ -157,16 +208,16 @@ export default function SettingsView({ showToast }: { showToast: (msg: string) =
             
             <div className="space-y-3">
               <div className="flex gap-3">
-                <div className="space-y-1 w-20"><label className="text-slate-500 text-xs">Emoji</label><input value={announcement.emoji} onChange={e => setAnnouncement({...announcement, emoji: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white text-center" /></div>
-                <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Message</label><input value={announcement.text} onChange={e => setAnnouncement({...announcement, text: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
+                <div className="space-y-1 w-20"><label className="text-slate-500 text-xs">Emoji</label><input value={announcement.emoji} onChange={e => setAnnouncement({...announcement, emoji: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 text-center" /></div>
+                <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Message</label><input value={announcement.text} onChange={e => setAnnouncement({...announcement, text: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
               </div>
               <div className="flex gap-3">
-                 <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Link Text</label><input value={announcement.linkText} onChange={e => setAnnouncement({...announcement, linkText: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
-                 <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Link URL</label><input value={announcement.linkUrl} onChange={e => setAnnouncement({...announcement, linkUrl: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white" /></div>
+                 <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Link Text</label><input value={announcement.linkText} onChange={e => setAnnouncement({...announcement, linkText: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
+                 <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Link URL</label><input value={announcement.linkUrl} onChange={e => setAnnouncement({...announcement, linkUrl: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
               </div>
               <div className="flex gap-3">
-                 <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Bg Color</label><input value={announcement.bgColor} onChange={e => setAnnouncement({...announcement, bgColor: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white font-mono" /></div>
-                 <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Text Color</label><input value={announcement.textColor} onChange={e => setAnnouncement({...announcement, textColor: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-white font-mono" /></div>
+                 <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Bg Color</label><input value={announcement.bgColor} onChange={e => setAnnouncement({...announcement, bgColor: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 font-mono" /></div>
+                 <div className="space-y-1 flex-1"><label className="text-slate-500 text-xs">Text Color</label><input value={announcement.textColor} onChange={e => setAnnouncement({...announcement, textColor: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 font-mono" /></div>
               </div>
             </div>
 

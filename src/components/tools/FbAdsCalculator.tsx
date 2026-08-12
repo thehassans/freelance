@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 import FbAdsSEOContent from './FbAdsSEOContent';
 
 export default function FbAdsCalculator() {
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('fb-ads-calc');
 
   // Primary Inputs
   const [budget, setBudget] = useState<number>(5000);

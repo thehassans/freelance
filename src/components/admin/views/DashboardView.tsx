@@ -78,7 +78,7 @@ export default function DashboardView() {
         ].map(stat => (
           <div key={stat.label} className="bg-slate-100 border border-slate-200 p-6 rounded-xl">
             <div className="text-[11px] font-mono text-slate-500 uppercase tracking-widest">{stat.label}</div>
-            <div className="text-4xl font-bold text-white mt-2 font-display">{stat.value}</div>
+            <div className="text-4xl font-bold text-slate-900 mt-2 font-display">{stat.value}</div>
             <div className="text-xs text-primary mt-2">{stat.sub}</div>
           </div>
         ))}

@@ -24,7 +24,7 @@ type Phase = 'form' | 'loading' | 'edit' | 'preview';
 
 export default function ProposalGenerator({ onPricingClick }: { onPricingClick?: () => void }) {
   const { isPro, aiUsageCount, consumeCredit, user, showProModal } = useUser();
-  const { executeAction, isProcessing } = usePremiumAction();
+  const { executeAction, isProcessing } = usePremiumAction('proposal-gen');
   const { requirePro } = useFeatureGate();
   const [phase, setPhase] = useState<Phase>('form');
   const [loading, setLoading] = useState(false);
