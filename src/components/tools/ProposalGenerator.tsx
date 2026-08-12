@@ -263,6 +263,20 @@ export default function ProposalGenerator({ onPricingClick }: { onPricingClick?:
                             style={{ backgroundColor: c }}
                           />
                         ))}
+                        <button
+                          onClick={() => document.getElementById('proposalColorPicker')?.click()}
+                          className="w-10 h-10 rounded-2xl border-2 border-transparent transition-all relative flex items-center justify-center shadow-md active:scale-95"
+                          style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}
+                        >
+                          <div className="absolute inset-1 bg-white rounded-xl"></div>
+                        </button>
+                        <input
+                          type="color"
+                          id="proposalColorPicker"
+                          value={primaryColor || '#0f4c75'}
+                          onChange={(e) => setPrimaryColor(e.target.value)}
+                          className="hidden"
+                        />
                       </div>
                     </div>
                     <div className="space-y-3">

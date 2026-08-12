@@ -114,9 +114,7 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
               </select>
             </div>
             <div className="space-y-1"><label className="text-[#818CF8]">System Prompt</label><textarea value={draft.aiPrompt || ''} onChange={e => setDraft({...draft, aiPrompt: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 h-64 font-mono text-xs" /></div>
-            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1"><label className="text-[#818CF8]">Max Tokens</label><input type="range" min={100} max={4000} step={100} value={draft.aiMaxTokens || 1000} onChange={e => setDraft({...draft, aiMaxTokens: parseInt(e.target.value)})} className="w-full" /><div className="text-xs text-slate-900 mt-1">{draft.aiMaxTokens || 1000}</div></div>
-              <div className="space-y-1"><label className="text-[#818CF8]">Credits Per Use</label><input type="number" min={1} max={10} value={draft.aiCreditsPerUse || 1} onChange={e => setDraft({...draft, aiCreditsPerUse: parseInt(e.target.value)})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" /></div>
             </div>
             <div className="text-slate-500 text-xs">
               Est. cost per call: ${((draft.aiMaxTokens || 1000) * 0.000003).toFixed(4)}
@@ -124,6 +122,40 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
             <button onClick={() => alert('Test Ping: Connected to ' + (draft.aiModel || 'claude-sonnet-4-20250514'))} className="w-full py-2 bg-[#252E4A] text-[#818CF8] font-bold rounded hover:bg-[#252E4A]/80 transition-colors">▶ Test Prompt</button>
           </>
         )}
+        
+        {/* Pricing Strategy (Available for all tools) */}
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+            Pricing Configuration
+          </h4>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-slate-500 font-bold block mb-1">Pricing Model</label>
+              <select 
+                value={draft.aiCreditsPerUse > 0 ? 'credits' : 'free'} 
+                onChange={e => setDraft({...draft, aiCreditsPerUse: e.target.value === 'free' ? 0 : 1})} 
+                className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 text-sm"
+              >
+                <option value="free">Free for All Users</option>
+                <option value="credits">Credit Based (Deducts credits per use)</option>
+              </select>
+            </div>
+            
+            {draft.aiCreditsPerUse > 0 && (
+              <div className="space-y-1">
+                <label className="text-slate-500 font-bold block mb-1">Credits Per Use</label>
+                <input 
+                  type="number" 
+                  min={1} 
+                  max={100} 
+                  value={draft.aiCreditsPerUse || 1} 
+                  onChange={e => setDraft({...draft, aiCreditsPerUse: parseInt(e.target.value) || 1})} 
+                  className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900" 
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="p-6 border-t border-slate-200 bg-white flex justify-end gap-4">

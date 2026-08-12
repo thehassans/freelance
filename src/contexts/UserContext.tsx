@@ -224,13 +224,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       try {
         const storedTools = JSON.parse(localStorage.getItem('fk_tools') || '[]');
         const tool = storedTools.find((t: any) => t.id === toolIdOrCost);
-        if (tool && tool.aiCreditsPerUse) {
+        if (tool && tool.aiCreditsPerUse !== undefined) {
           cost = tool.aiCreditsPerUse;
         }
       } catch (e) {}
     }
 
-    if (isPro) return true; // Pro users might have unlimited or we still deduct? Let's still deduct but maybe they get more base credits? Prompt says: "each service have credit fees set in admin panel". Let's deduct from everyone except maybe if they are explicitly bypassing. Actually, let's always deduct credits unless they have a bypass.
+    if (cost === 0) return true;
     
     if (aiCredits < cost) {
       toast.error(`Not enough credits. Required: ${cost}, Available: ${aiCredits}`);

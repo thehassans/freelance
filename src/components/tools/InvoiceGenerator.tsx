@@ -930,9 +930,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
                       return (
                         <button 
                           key={color}
-                          onClick={() => {
-                            requirePro("Premium Colors", () => setPrimaryColor(color));
-                          }}
+                          onClick={() => setPrimaryColor(color)}
                           className="w-10 h-10 rounded-full border-2 transition-all relative flex items-center justify-center shadow-md active:scale-95"
                           style={{ 
                             backgroundColor: color, 
@@ -950,7 +948,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
                       );
                     })}
                     <button
-                      onClick={() => isPro ? document.getElementById('colorPicker')?.click() : requirePro("Custom Hex Branding", () => {})}
+                      onClick={() => document.getElementById('colorPicker')?.click()}
                       className="w-10 h-10 rounded-full border-2 border-transparent transition-all relative flex items-center justify-center shadow-md active:scale-95"
                       style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}
                     >
