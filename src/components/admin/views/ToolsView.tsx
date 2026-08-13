@@ -115,7 +115,6 @@ function ToolEditDrawer({ tool, onSave, onClose }: ToolEditDrawerProps) {
             </div>
             <div className="space-y-1"><label className="text-[#818CF8]">System Prompt</label><textarea value={draft.aiPrompt || ''} onChange={e => setDraft({...draft, aiPrompt: e.target.value})} className="w-full bg-white border border-slate-200 rounded p-2 text-slate-900 h-64 font-mono text-xs" /></div>
               <div className="space-y-1"><label className="text-[#818CF8]">Max Tokens</label><input type="range" min={100} max={4000} step={100} value={draft.aiMaxTokens || 1000} onChange={e => setDraft({...draft, aiMaxTokens: parseInt(e.target.value)})} className="w-full" /><div className="text-xs text-slate-900 mt-1">{draft.aiMaxTokens || 1000}</div></div>
-            </div>
             <div className="text-slate-500 text-xs">
               Est. cost per call: ${((draft.aiMaxTokens || 1000) * 0.000003).toFixed(4)}
             </div>
