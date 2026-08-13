@@ -925,8 +925,7 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Primary Brand Color</label>
                   <div className="flex flex-wrap gap-3">
-                    {colors.map((color, index) => {
-                      const isLocked = index > 0 && !isPro;
+                    {colors.map((color) => {
                       return (
                         <button 
                           key={color}
@@ -939,11 +938,6 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
                           }}
                         >
                           {primaryColor === color && <Check size={20} className="text-white" />}
-                          {isLocked && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full">
-                              <Lock size={14} className="text-white" />
-                            </div>
-                          )}
                         </button>
                       );
                     })}
@@ -952,7 +946,6 @@ export default function InvoiceGenerator({ onPricingClick }: { onPricingClick?: 
                       className="w-10 h-10 rounded-full border-2 border-transparent transition-all relative flex items-center justify-center shadow-md active:scale-95"
                       style={{ background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)' }}
                     >
-                      {!isPro && <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-full"><Lock size={14} className="text-white" /></div>}
                     </button>
                     <input 
                       type="color"
